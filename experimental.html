@@ -372,7 +372,7 @@
             </div>
         </div>
 
-        <div style="margin-top: 12px; border-top: 1px dashed #b0c4de; padding-top: 12px; display:flex; gap:8px;">
+        <div id="editModeSection" style="margin-top: 12px; border-top: 1px dashed #b0c4de; padding-top: 12px; display:none; gap:8px;">
             <button id="toggleEditModeBtn" onclick="toggleEditMode()" style="flex:1; background:var(--text); color:white; border-radius:6px; font-size:12px; padding:8px 10px; border:1px solid rgba(0,0,0,0.1); cursor:pointer; font-weight:bold;">✏️ Düzenleme Modu: KAPALI</button>
             <button id="downloadPositionsBtn" onclick="downloadDotPositions()" style="display:none; background:var(--purple); color:white; border-radius:6px; font-size:12px; padding:8px 10px; border:none; cursor:pointer; font-weight:bold;">💾 Konumları İndir</button>
         </div>
@@ -432,7 +432,6 @@
         </div>
         <input type="file" id="projectLoader" accept=".json" style="display:none" onchange="loadProject(this)">
         
-        <button onclick="downloadAdvancedResults()" class="danger" style="width: 100%; background-color:#8e24aa;">📥 Gelişmiş Sonuçları İndir (.TXT)</button>
     </div>
 </div>
 
@@ -766,6 +765,29 @@ window.addEventListener('DOMContentLoaded', async () => {
             const projRes = await fetch(cfg.defaultProject);
             if (!projRes.ok) throw new Error(`Proje dosyası bulunamadı: ${cfg.defaultProject}`);
             const projData = await projRes.json();
+
+            // Lean dataset'lerde data/nat yok — txt dosyalarını yeniden çek
+            if (projData.datasets && projData.datasets.some(ds => !ds.data)) {
+                setStatus('Seçim verileri yükleniyor...', 82);
+                const refetched = [];
+                for (const ds of projData.datasets) {
+                    if (ds.data) {
+                        refetched.push(ds);
+                    } else {
+                        try {
+                            const r = await fetch(ds.name);
+                            if (r.ok) {
+                                const text = await r.text();
+                                const parsed = parseTxt(text);
+                                const nat = calcNat(parsed);
+                                refetched.push({ id: Date.now() + Math.random(), name: ds.name, data: parsed, nat, w: ds.w });
+                            }
+                        } catch(e) { console.warn('Dataset çekilemedi:', ds.name); }
+                    }
+                }
+                projData.datasets = refetched;
+            }
+
             applyProjectData(projData);
 
             if (datasets.length > 0) {
@@ -3046,6 +3068,7 @@ function setUIMode(mode) {
     // Seçim Ayarları — matematiksel model + ittifak dağılımı
     isGelismis ? show($('settingMathMethod')) : hide($('settingMathMethod'));
     isGelismis ? show($('settingCalcMethod'), 'flex') : hide($('settingCalcMethod'));
+    isGelismis ? show($('editModeSection'), 'flex') : hide($('editModeSection'));
 }
 
 // Sayfa yüklenince Genel modu uygula
@@ -3058,60 +3081,44 @@ async function takeScreenshot() {
     btn.innerHTML = '<span style="font-size:18px;">⏳</span> Kaydediliyor...';
     btn.disabled = true;
 
-    // html2canvas'ı ihtiyaç anında CDN'den yükle
-    if (!window.html2canvas) {
-        await new Promise((resolve, reject) => {
-            const s = document.createElement('script');
-            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-            s.onload = resolve;
-            s.onerror = reject;
-            document.head.appendChild(s);
-        });
-    }
-
     try {
-        const parlVisible = $('parliamentContainer').style.display !== 'none';
-        const mapVisible  = $('mapContainer').style.display !== 'none';
+        const svgEl = document.querySelector('#svgMapWrapper svg');
+        if (!svgEl) { alert('Harita henüz yüklenmedi!'); return; }
 
-        if (!parlVisible && !mapVisible) {
-            alert('Önce hesaplama yapın!');
-            return;
-        }
+        const W = 1920, H = 1080;
+        const bgColor = '#e9eaef';
 
-        // Geçici sarmalayıcı oluştur
-        const wrapper = document.createElement('div');
-        wrapper.style.cssText = 'position:fixed;top:-9999px;left:-9999px;background:#e9eaef;padding:24px;display:flex;flex-direction:column;gap:16px;width:960px;';
+        const svgClone = svgEl.cloneNode(true);
+        svgClone.setAttribute('width', W);
+        svgClone.setAttribute('height', H);
+        svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
-        if (parlVisible) {
-            const clone = $('parliamentContainer').cloneNode(true);
-            clone.style.display = 'block';
-            wrapper.appendChild(clone);
-        }
-        if (mapVisible) {
-            const clone = $('mapContainer').cloneNode(true);
-            clone.style.position = 'relative';
-            // Harita içindeki butonları temizle
-            ['fullscreenMapBtn'].forEach(id => {
-                const el = clone.querySelector('#' + id);
-                if (el) el.remove();
-            });
-            wrapper.appendChild(clone);
-        }
+        // Arka plan
+        const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        bgRect.setAttribute('width', '100%');
+        bgRect.setAttribute('height', '100%');
+        bgRect.setAttribute('fill', bgColor);
+        svgClone.insertBefore(bgRect, svgClone.firstChild);
 
-        document.body.appendChild(wrapper);
+        const svgStr = new XMLSerializer().serializeToString(svgClone);
+        const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
 
-        const canvas = await html2canvas(wrapper, {
-            backgroundColor: '#e9eaef',
-            scale: 2,
-            useCORS: true,
-            allowTaint: true,
-            logging: false
+        const canvas = document.createElement('canvas');
+        canvas.width = W; canvas.height = H;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, W, H);
+
+        await new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => { ctx.drawImage(img, 0, 0, W, H); URL.revokeObjectURL(url); resolve(); };
+            img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('SVG render başarısız')); };
+            img.src = url;
         });
-
-        document.body.removeChild(wrapper);
 
         const link = document.createElement('a');
-        link.download = 'projeksiyon_' + new Date().toISOString().slice(0, 10) + '.png';
+        link.download = 'harita_' + new Date().toISOString().slice(0, 10) + '.png';
         link.href = canvas.toDataURL('image/png');
         link.click();
 
