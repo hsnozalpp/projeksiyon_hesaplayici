@@ -1,5 +1,5 @@
 {
-  "ADANA": {
+  "Adana": {
     "seats": 15,
     "votes": {
       "MİL": 1411,
@@ -28,7 +28,7 @@
       "ZP": 29480
     }
   },
-  "ADIYAMAN": {
+  "Adıyaman": {
     "seats": 5,
     "votes": {
       "MİL": 515,
@@ -57,7 +57,7 @@
       "ZP": 1955
     }
   },
-  "AFYONKARAHİSAR": {
+  "Afyonkarahisar": {
     "seats": 6,
     "votes": {
       "MİL": 831,
@@ -86,7 +86,7 @@
       "ZP": 10604
     }
   },
-  "AĞRI": {
+  "Ağrı": {
     "seats": 4,
     "votes": {
       "MİL": 125,
@@ -115,7 +115,7 @@
       "ZP": 0
     }
   },
-  "AKSARAY": {
+  "Aksaray": {
     "seats": 4,
     "votes": {
       "MİL": 377,
@@ -144,7 +144,7 @@
       "ZP": 3379
     }
   },
-  "AMASYA": {
+  "Amasya": {
     "seats": 3,
     "votes": {
       "MİL": 159,
@@ -173,7 +173,7 @@
       "ZP": 3486
     }
   },
-  "ANKARA 1. BÖLGE": {
+  "Ankara 1. Bölge": {
     "seats": 13,
     "votes": {
       "MİL": 1124,
@@ -202,7 +202,7 @@
       "ZP": 41141
     }
   },
-  "ANKARA 2. BÖLGE": {
+  "Ankara 2. Bölge": {
     "seats": 11,
     "votes": {
       "MİL": 1167,
@@ -231,7 +231,7 @@
       "ZP": 40189
     }
   },
-  "ANKARA 3. BÖLGE": {
+  "Ankara 3. Bölge": {
     "seats": 13,
     "votes": {
       "MİL": 1331,
@@ -260,7 +260,7 @@
       "ZP": 49077
     }
   },
-  "ANTALYA": {
+  "Antalya": {
     "seats": 18,
     "votes": {
       "MİL": 2015,
@@ -289,7 +289,7 @@
       "ZP": 47322
     }
   },
-  "ARDAHAN": {
+  "Ardahan": {
     "seats": 2,
     "votes": {
       "MİL": 46,
@@ -318,7 +318,7 @@
       "ZP": 570
     }
   },
-  "ARTVİN": {
+  "Artvin": {
     "seats": 2,
     "votes": {
       "MİL": 113,
@@ -347,7 +347,7 @@
       "ZP": 1344
     }
   },
-  "AYDIN": {
+  "Aydın": {
     "seats": 8,
     "votes": {
       "MİL": 759,
@@ -376,7 +376,7 @@
       "ZP": 17282
     }
   },
-  "BALIKESİR": {
+  "Balıkesir": {
     "seats": 9,
     "votes": {
       "MİL": 1017,
@@ -405,7 +405,7 @@
       "ZP": 18326
     }
   },
-  "BARTIN": {
+  "Bartın": {
     "seats": 2,
     "votes": {
       "MİL": 253,
@@ -434,7 +434,7 @@
       "ZP": 1911
     }
   },
-  "BATMAN": {
+  "Batman": {
     "seats": 5,
     "votes": {
       "MİL": 150,
@@ -463,7 +463,7 @@
       "ZP": 0
     }
   },
-  "BAYBURT": {
+  "Bayburt": {
     "seats": 1,
     "votes": {
       "MİL": 40,
@@ -492,7 +492,7 @@
       "ZP": 667
     }
   },
-  "BİLECİK": {
+  "Bilecik": {
     "seats": 2,
     "votes": {
       "MİL": 196,
@@ -521,7 +521,7 @@
       "ZP": 3382
     }
   },
-  "BİNGÖL": {
+  "Bingöl": {
     "seats": 3,
     "votes": {
       "MİL": 125,
@@ -550,7 +550,7 @@
       "ZP": 0
     }
   },
-  "BİTLİS": {
+  "Bitlis": {
     "seats": 3,
     "votes": {
       "MİL": 180,
@@ -579,7 +579,7 @@
       "ZP": 0
     }
   },
-  "BOLU": {
+  "Bolu": {
     "seats": 3,
     "votes": {
       "MİL": 207,
@@ -608,7 +608,7 @@
       "ZP": 4063
     }
   },
-  "BURDUR": {
+  "Burdur": {
     "seats": 3,
     "votes": {
       "MİL": 234,
@@ -637,7 +637,7 @@
       "ZP": 2575
     }
   },
-  "BURSA 1. BÖLGE": {
+  "Bursa 1. Bölge": {
     "seats": 11,
     "votes": {
       "MİL": 1314,
@@ -666,7 +666,7 @@
       "ZP": 41943
     }
   },
-  "BURSA 2. BÖLGE": {
+  "Bursa 2. Bölge": {
     "seats": 10,
     "votes": {
       "MİL": 1275,
@@ -695,7 +695,7 @@
       "ZP": 36083
     }
   },
-  "ÇANAKKALE": {
+  "Çanakkale": {
     "seats": 4,
     "votes": {
       "MİL": 403,
@@ -724,7 +724,7 @@
       "ZP": 7860
     }
   },
-  "ÇANKIRI": {
+  "Çankırı": {
     "seats": 2,
     "votes": {
       "MİL": 149,
@@ -753,7 +753,7 @@
       "ZP": 1895
     }
   },
-  "ÇORUM": {
+  "Çorum": {
     "seats": 4,
     "votes": {
       "MİL": 440,
@@ -782,7 +782,7 @@
       "ZP": 5398
     }
   },
-  "DENİZLİ": {
+  "Denizli": {
     "seats": 7,
     "votes": {
       "MİL": 1025,
@@ -811,7 +811,7 @@
       "ZP": 18494
     }
   },
-  "DİYARBAKIR": {
+  "Diyarbakır": {
     "seats": 12,
     "votes": {
       "MİL": 503,
@@ -840,7 +840,7 @@
       "ZP": 0
     }
   },
-  "DÜZCE": {
+  "Düzce": {
     "seats": 3,
     "votes": {
       "MİL": 388,
@@ -869,7 +869,7 @@
       "ZP": 5754
     }
   },
-  "EDİRNE": {
+  "Edirne": {
     "seats": 4,
     "votes": {
       "MİL": 366,
@@ -898,7 +898,7 @@
       "ZP": 4241
     }
   },
-  "ELAZIĞ": {
+  "Elazığ": {
     "seats": 5,
     "votes": {
       "MİL": 149,
@@ -927,7 +927,7 @@
       "ZP": 1950
     }
   },
-  "ERZİNCAN": {
+  "Erzincan": {
     "seats": 2,
     "votes": {
       "MİL": 60,
@@ -956,7 +956,7 @@
       "ZP": 1460
     }
   },
-  "ERZURUM": {
+  "Erzurum": {
     "seats": 5,
     "votes": {
       "MİL": 304,
@@ -985,7 +985,7 @@
       "ZP": 10282
     }
   },
-  "ESKİŞEHİR": {
+  "Eskişehir": {
     "seats": 7,
     "votes": {
       "MİL": 836,
@@ -1014,7 +1014,7 @@
       "ZP": 18617
     }
   },
-  "GAZİANTEP": {
+  "Gaziantep": {
     "seats": 14,
     "votes": {
       "MİL": 1547,
@@ -1043,7 +1043,7 @@
       "ZP": 37425
     }
   },
-  "GİRESUN": {
+  "Giresun": {
     "seats": 4,
     "votes": {
       "MİL": 320,
@@ -1072,7 +1072,7 @@
       "ZP": 4623
     }
   },
-  "GÜMÜŞHANE": {
+  "Gümüşhane": {
     "seats": 2,
     "votes": {
       "MİL": 107,
@@ -1101,7 +1101,7 @@
       "ZP": 860
     }
   },
-  "HAKKARİ": {
+  "Hakkari": {
     "seats": 3,
     "votes": {
       "MİL": 143,
@@ -1130,7 +1130,7 @@
       "ZP": 0
     }
   },
-  "HATAY": {
+  "Hatay": {
     "seats": 10,
     "votes": {
       "MİL": 591,
@@ -1159,7 +1159,7 @@
       "ZP": 11507
     }
   },
-  "IĞDIR": {
+  "Iğdır": {
     "seats": 2,
     "votes": {
       "MİL": 55,
@@ -1188,7 +1188,7 @@
       "ZP": 0
     }
   },
-  "ISPARTA": {
+  "Isparta": {
     "seats": 4,
     "votes": {
       "MİL": 335,
@@ -1217,7 +1217,7 @@
       "ZP": 5552
     }
   },
-  "İSTANBUL 1. BÖLGE": {
+  "İstanbul 1. Bölge": {
     "seats": 35,
     "votes": {
       "MİL": 2480,
@@ -1246,7 +1246,7 @@
       "ZP": 102722
     }
   },
-  "İSTANBUL 2. BÖLGE": {
+  "İstanbul 2. Bölge": {
     "seats": 25,
     "votes": {
       "MİL": 1943,
@@ -1275,7 +1275,7 @@
       "ZP": 78649
     }
   },
-  "İSTANBUL 3. BÖLGE": {
+  "İstanbul 3. Bölge": {
     "seats": 36,
     "votes": {
       "MİL": 2846,
@@ -1304,7 +1304,7 @@
       "ZP": 103850
     }
   },
-  "İZMİR 1. BÖLGE": {
+  "İzmir 1. Bölge": {
     "seats": 14,
     "votes": {
       "MİL": 1337,
@@ -1333,7 +1333,7 @@
       "ZP": 34721
     }
   },
-  "İZMİR 2. BÖLGE": {
+  "İzmir 2. Bölge": {
     "seats": 14,
     "votes": {
       "MİL": 1639,
@@ -1362,7 +1362,7 @@
       "ZP": 36956
     }
   },
-  "KAHRAMANMARAŞ": {
+  "Kahramanmaraş": {
     "seats": 8,
     "votes": {
       "MİL": 514,
@@ -1391,7 +1391,7 @@
       "ZP": 10810
     }
   },
-  "KARABÜK": {
+  "Karabük": {
     "seats": 2,
     "votes": {
       "MİL": 153,
@@ -1420,7 +1420,7 @@
       "ZP": 3324
     }
   },
-  "KARAMAN": {
+  "Karaman": {
     "seats": 3,
     "votes": {
       "MİL": 185,
@@ -1449,7 +1449,7 @@
       "ZP": 3081
     }
   },
-  "KARS": {
+  "Kars": {
     "seats": 3,
     "votes": {
       "MİL": 114,
@@ -1478,7 +1478,7 @@
       "ZP": 0
     }
   },
-  "KASTAMONU": {
+  "Kastamonu": {
     "seats": 3,
     "votes": {
       "MİL": 342,
@@ -1507,7 +1507,7 @@
       "ZP": 4432
     }
   },
-  "KAYSERİ": {
+  "Kayseri": {
     "seats": 10,
     "votes": {
       "MİL": 918,
@@ -1536,7 +1536,7 @@
       "ZP": 29838
     }
   },
-  "KIRIKKALE": {
+  "Kırıkkale": {
     "seats": 3,
     "votes": {
       "MİL": 106,
@@ -1565,7 +1565,7 @@
       "ZP": 2718
     }
   },
-  "KIRKLARELİ": {
+  "Kırklareli": {
     "seats": 3,
     "votes": {
       "MİL": 283,
@@ -1594,7 +1594,7 @@
       "ZP": 4059
     }
   },
-  "KIRŞEHİR": {
+  "Kırşehir": {
     "seats": 2,
     "votes": {
       "MİL": 116,
@@ -1623,7 +1623,7 @@
       "ZP": 2900
     }
   },
-  "KİLİS": {
+  "Kilis": {
     "seats": 2,
     "votes": {
       "MİL": 78,
@@ -1652,7 +1652,7 @@
       "ZP": 1598
     }
   },
-  "KOCAELİ": {
+  "Kocaeli": {
     "seats": 14,
     "votes": {
       "MİL": 1442,
@@ -1681,7 +1681,7 @@
       "ZP": 43088
     }
   },
-  "KONYA": {
+  "Konya": {
     "seats": 15,
     "votes": {
       "MİL": 1622,
@@ -1710,7 +1710,7 @@
       "ZP": 42301
     }
   },
-  "KÜTAHYA": {
+  "Kütahya": {
     "seats": 4,
     "votes": {
       "MİL": 711,
@@ -1739,7 +1739,7 @@
       "ZP": 6648
     }
   },
-  "MALATYA": {
+  "Malatya": {
     "seats": 6,
     "votes": {
       "MİL": 249,
@@ -1768,7 +1768,7 @@
       "ZP": 4805
     }
   },
-  "MANİSA": {
+  "Manisa": {
     "seats": 10,
     "votes": {
       "MİL": 1266,
@@ -1797,7 +1797,7 @@
       "ZP": 22093
     }
   },
-  "MARDİN": {
+  "Mardin": {
     "seats": 6,
     "votes": {
       "MİL": 181,
@@ -1826,7 +1826,7 @@
       "ZP": 2076
     }
   },
-  "MERSİN": {
+  "Mersin": {
     "seats": 13,
     "votes": {
       "MİL": 959,
@@ -1855,7 +1855,7 @@
       "ZP": 22013
     }
   },
-  "MUĞLA": {
+  "Muğla": {
     "seats": 8,
     "votes": {
       "MİL": 724,
@@ -1884,7 +1884,7 @@
       "ZP": 11947
     }
   },
-  "MUŞ": {
+  "Muş": {
     "seats": 3,
     "votes": {
       "MİL": 137,
@@ -1913,7 +1913,7 @@
       "ZP": 0
     }
   },
-  "NEVŞEHİR": {
+  "Nevşehir": {
     "seats": 3,
     "votes": {
       "MİL": 120,
@@ -1942,7 +1942,7 @@
       "ZP": 2552
     }
   },
-  "NİĞDE": {
+  "Niğde": {
     "seats": 3,
     "votes": {
       "MİL": 189,
@@ -1971,7 +1971,7 @@
       "ZP": 3252
     }
   },
-  "ORDU": {
+  "Ordu": {
     "seats": 6,
     "votes": {
       "MİL": 530,
@@ -2000,7 +2000,7 @@
       "ZP": 7093
     }
   },
-  "OSMANİYE": {
+  "Osmaniye": {
     "seats": 4,
     "votes": {
       "MİL": 265,
@@ -2029,7 +2029,7 @@
       "ZP": 5731
     }
   },
-  "RİZE": {
+  "Rize": {
     "seats": 3,
     "votes": {
       "MİL": 244,
@@ -2058,7 +2058,7 @@
       "ZP": 4050
     }
   },
-  "SAKARYA": {
+  "Sakarya": {
     "seats": 8,
     "votes": {
       "MİL": 760,
@@ -2087,7 +2087,7 @@
       "ZP": 18736
     }
   },
-  "SAMSUN": {
+  "Samsun": {
     "seats": 9,
     "votes": {
       "MİL": 1171,
@@ -2116,7 +2116,7 @@
       "ZP": 19545
     }
   },
-  "SİİRT": {
+  "Siirt": {
     "seats": 3,
     "votes": {
       "MİL": 75,
@@ -2145,7 +2145,7 @@
       "ZP": 0
     }
   },
-  "SİNOP": {
+  "Sinop": {
     "seats": 2,
     "votes": {
       "MİL": 230,
@@ -2174,7 +2174,7 @@
       "ZP": 2166
     }
   },
-  "SİVAS": {
+  "Sivas": {
     "seats": 5,
     "votes": {
       "MİL": 244,
@@ -2203,7 +2203,7 @@
       "ZP": 7307
     }
   },
-  "ŞANLIURFA": {
+  "Şanlıurfa": {
     "seats": 15,
     "votes": {
       "MİL": 638,
@@ -2232,7 +2232,7 @@
       "ZP": 0
     }
   },
-  "ŞIRNAK": {
+  "Şırnak": {
     "seats": 4,
     "votes": {
       "MİL": 72,
@@ -2261,7 +2261,7 @@
       "ZP": 3020
     }
   },
-  "TEKİRDAĞ": {
+  "Tekirdağ": {
     "seats": 8,
     "votes": {
       "MİL": 760,
@@ -2290,7 +2290,7 @@
       "ZP": 17558
     }
   },
-  "TOKAT": {
+  "Tokat": {
     "seats": 5,
     "votes": {
       "MİL": 429,
@@ -2319,7 +2319,7 @@
       "ZP": 5439
     }
   },
-  "TRABZON": {
+  "Trabzon": {
     "seats": 6,
     "votes": {
       "MİL": 580,
@@ -2348,7 +2348,7 @@
       "ZP": 9903
     }
   },
-  "TUNCELİ": {
+  "Tunceli": {
     "seats": 2,
     "votes": {
       "MİL": 29,
@@ -2377,7 +2377,7 @@
       "ZP": 0
     }
   },
-  "UŞAK": {
+  "Uşak": {
     "seats": 3,
     "votes": {
       "MİL": 247,
@@ -2406,7 +2406,7 @@
       "ZP": 4025
     }
   },
-  "VAN": {
+  "Van": {
     "seats": 8,
     "votes": {
       "MİL": 277,
@@ -2435,7 +2435,7 @@
       "ZP": 4101
     }
   },
-  "YALOVA": {
+  "Yalova": {
     "seats": 3,
     "votes": {
       "MİL": 255,
@@ -2464,7 +2464,7 @@
       "ZP": 4030
     }
   },
-  "YOZGAT": {
+  "Yozgat": {
     "seats": 3,
     "votes": {
       "MİL": 337,
@@ -2493,7 +2493,7 @@
       "ZP": 3323
     }
   },
-  "ZONGULDAK": {
+  "Zonguldak": {
     "seats": 5,
     "votes": {
       "MİL": 638,

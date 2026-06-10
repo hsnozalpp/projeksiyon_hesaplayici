@@ -1,5 +1,5 @@
 {
-  "ADANA": {
+  "Adana": {
     "seats": 15,
     "votes": {
       "AKP": 230203,
@@ -38,7 +38,7 @@
       "VP": 1486
     }
   },
-  "ADIYAMAN": {
+  "Adıyaman": {
     "seats": 5,
     "votes": {
       "AKP": 103419,
@@ -77,7 +77,7 @@
       "VP": 390
     }
   },
-  "AFYONKARAHİSAR": {
+  "Afyonkarahisar": {
     "seats": 6,
     "votes": {
       "AKP": 154158,
@@ -116,7 +116,7 @@
       "VP": 345
     }
   },
-  "AĞRI": {
+  "Ağrı": {
     "seats": 4,
     "votes": {
       "AKP": 52470,
@@ -155,7 +155,7 @@
       "VP": 0
     }
   },
-  "AKSARAY": {
+  "Aksaray": {
     "seats": 4,
     "votes": {
       "AKP": 80936,
@@ -194,7 +194,7 @@
       "VP": 161
     }
   },
-  "AMASYA": {
+  "Amasya": {
     "seats": 3,
     "votes": {
       "AKP": 73214,
@@ -233,7 +233,7 @@
       "VP": 158
     }
   },
-  "ANTALYA": {
+  "Antalya": {
     "seats": 17,
     "votes": {
       "AKP": 394141,
@@ -272,7 +272,7 @@
       "VP": 1668
     }
   },
-  "ARDAHAN": {
+  "Ardahan": {
     "seats": 2,
     "votes": {
       "AKP": 13863,
@@ -311,7 +311,7 @@
       "VP": 172
     }
   },
-  "ARTVİN": {
+  "Artvin": {
     "seats": 2,
     "votes": {
       "AKP": 38704,
@@ -350,7 +350,7 @@
       "VP": 80
     }
   },
-  "AYDIN": {
+  "Aydın": {
     "seats": 8,
     "votes": {
       "AKP": 130424,
@@ -389,7 +389,7 @@
       "VP": 1101
     }
   },
-  "BALIKESİR": {
+  "Balıkesir": {
     "seats": 9,
     "votes": {
       "AKP": 297955,
@@ -428,7 +428,7 @@
       "VP": 684
     }
   },
-  "BARTIN": {
+  "Bartın": {
     "seats": 2,
     "votes": {
       "AKP": 37958,
@@ -467,7 +467,7 @@
       "VP": 295
     }
   },
-  "BATMAN": {
+  "Batman": {
     "seats": 5,
     "votes": {
       "AKP": 47754,
@@ -506,7 +506,7 @@
       "VP": 232
     }
   },
-  "BAYBURT": {
+  "Bayburt": {
     "seats": 2,
     "votes": {
       "AKP": 18173,
@@ -545,7 +545,7 @@
       "VP": 37
     }
   },
-  "BİLECİK": {
+  "Bilecik": {
     "seats": 2,
     "votes": {
       "AKP": 37228,
@@ -584,7 +584,7 @@
       "VP": 274
     }
   },
-  "BİNGÖL": {
+  "Bingöl": {
     "seats": 3,
     "votes": {
       "AKP": 40220,
@@ -623,7 +623,7 @@
       "VP": 107
     }
   },
-  "BİTLİS": {
+  "Bitlis": {
     "seats": 3,
     "votes": {
       "AKP": 50624,
@@ -662,7 +662,7 @@
       "VP": 190
     }
   },
-  "BOLU": {
+  "Bolu": {
     "seats": 3,
     "votes": {
       "AKP": 62377,
@@ -701,7 +701,7 @@
       "VP": 175
     }
   },
-  "BURDUR": {
+  "Burdur": {
     "seats": 3,
     "votes": {
       "AKP": 59646,
@@ -740,7 +740,7 @@
       "VP": 236
     }
   },
-  "ÇANAKKALE": {
+  "Çanakkale": {
     "seats": 4,
     "votes": {
       "AKP": 107666,
@@ -779,7 +779,7 @@
       "VP": 323
     }
   },
-  "ÇANKIRI": {
+  "Çankırı": {
     "seats": 2,
     "votes": {
       "AKP": 46430,
@@ -818,7 +818,7 @@
       "VP": 138
     }
   },
-  "ÇORUM": {
+  "Çorum": {
     "seats": 4,
     "votes": {
       "AKP": 106954,
@@ -857,7 +857,7 @@
       "VP": 428
     }
   },
-  "DENİZLİ": {
+  "Denizli": {
     "seats": 7,
     "votes": {
       "AKP": 191810,
@@ -896,7 +896,7 @@
       "VP": 849
     }
   },
-  "DİYARBAKIR": {
+  "Diyarbakır": {
     "seats": 12,
     "votes": {
       "AKP": 121473,
@@ -935,7 +935,7 @@
       "VP": 607
     }
   },
-  "DÜZCE": {
+  "Düzce": {
     "seats": 3,
     "votes": {
       "AKP": 94208,
@@ -974,7 +974,7 @@
       "VP": 335
     }
   },
-  "EDİRNE": {
+  "Edirne": {
     "seats": 4,
     "votes": {
       "AKP": 84179,
@@ -1013,7 +1013,7 @@
       "VP": 248
     }
   },
-  "ELAZIĞ": {
+  "Elazığ": {
     "seats": 5,
     "votes": {
       "AKP": 102155,
@@ -1052,7 +1052,7 @@
       "VP": 434
     }
   },
-  "ERZİNCAN": {
+  "Erzincan": {
     "seats": 2,
     "votes": {
       "AKP": 37393,
@@ -1091,7 +1091,7 @@
       "VP": 239
     }
   },
-  "ERZURUM": {
+  "Erzurum": {
     "seats": 6,
     "votes": {
       "AKP": 139777,
@@ -1130,7 +1130,7 @@
       "VP": 126
     }
   },
-  "ESKİŞEHİR": {
+  "Eskişehir": {
     "seats": 7,
     "votes": {
       "AKP": 184238,
@@ -1169,7 +1169,7 @@
       "VP": 467
     }
   },
-  "GAZİANTEP": {
+  "Gaziantep": {
     "seats": 14,
     "votes": {
       "AKP": 323975,
@@ -1208,7 +1208,7 @@
       "VP": 975
     }
   },
-  "GİRESUN": {
+  "Giresun": {
     "seats": 4,
     "votes": {
       "AKP": 104008,
@@ -1247,7 +1247,7 @@
       "VP": 179
     }
   },
-  "GÜMÜŞHANE": {
+  "Gümüşhane": {
     "seats": 2,
     "votes": {
       "AKP": 28562,
@@ -1286,7 +1286,7 @@
       "VP": 50
     }
   },
-  "HAKKARİ": {
+  "Hakkari": {
     "seats": 3,
     "votes": {
       "AKP": 37904,
@@ -1325,7 +1325,7 @@
       "VP": 0
     }
   },
-  "HATAY": {
+  "Hatay": {
     "seats": 10,
     "votes": {
       "AKP": 256516,
@@ -1364,7 +1364,7 @@
       "VP": 566
     }
   },
-  "IĞDIR": {
+  "Iğdır": {
     "seats": 2,
     "votes": {
       "AKP": 25182,
@@ -1403,7 +1403,7 @@
       "VP": 169
     }
   },
-  "ISPARTA": {
+  "Isparta": {
     "seats": 4,
     "votes": {
       "AKP": 91807,
@@ -1442,7 +1442,7 @@
       "VP": 424
     }
   },
-  "KAHRAMANMARAŞ": {
+  "Kahramanmaraş": {
     "seats": 8,
     "votes": {
       "AKP": 219429,
@@ -1481,7 +1481,7 @@
       "VP": 62
     }
   },
-  "KARABÜK": {
+  "Karabük": {
     "seats": 3,
     "votes": {
       "AKP": 51975,
@@ -1520,7 +1520,7 @@
       "VP": 156
     }
   },
-  "KARAMAN": {
+  "Karaman": {
     "seats": 3,
     "votes": {
       "AKP": 42721,
@@ -1559,7 +1559,7 @@
       "VP": 281
     }
   },
-  "KARS": {
+  "Kars": {
     "seats": 3,
     "votes": {
       "AKP": 29228,
@@ -1598,7 +1598,7 @@
       "VP": 228
     }
   },
-  "KASTAMONU": {
+  "Kastamonu": {
     "seats": 3,
     "votes": {
       "AKP": 90487,
@@ -1637,7 +1637,7 @@
       "VP": 562
     }
   },
-  "KAYSERİ": {
+  "Kayseri": {
     "seats": 10,
     "votes": {
       "AKP": 259964,
@@ -1676,7 +1676,7 @@
       "VP": 759
     }
   },
-  "KIRIKKALE": {
+  "Kırıkkale": {
     "seats": 3,
     "votes": {
       "AKP": 45463,
@@ -1715,7 +1715,7 @@
       "VP": 88
     }
   },
-  "KIRKLARELİ": {
+  "Kırklareli": {
     "seats": 3,
     "votes": {
       "AKP": 55056,
@@ -1754,7 +1754,7 @@
       "VP": 261
     }
   },
-  "KIRŞEHİR": {
+  "Kırşehir": {
     "seats": 2,
     "votes": {
       "AKP": 41951,
@@ -1793,7 +1793,7 @@
       "VP": 113
     }
   },
-  "KİLİS": {
+  "Kilis": {
     "seats": 2,
     "votes": {
       "AKP": 23235,
@@ -1832,7 +1832,7 @@
       "VP": 66
     }
   },
-  "KOCAELİ": {
+  "Kocaeli": {
     "seats": 14,
     "votes": {
       "AKP": 435646,
@@ -1871,7 +1871,7 @@
       "VP": 1752
     }
   },
-  "KONYA": {
+  "Konya": {
     "seats": 15,
     "votes": {
       "AKP": 465948,
@@ -1910,7 +1910,7 @@
       "VP": 1190
     }
   },
-  "KÜTAHYA": {
+  "Kütahya": {
     "seats": 4,
     "votes": {
       "AKP": 117501,
@@ -1949,7 +1949,7 @@
       "VP": 388
     }
   },
-  "MALATYA": {
+  "Malatya": {
     "seats": 6,
     "votes": {
       "AKP": 180362,
@@ -1988,7 +1988,7 @@
       "VP": 226
     }
   },
-  "MANİSA": {
+  "Manisa": {
     "seats": 10,
     "votes": {
       "AKP": 182689,
@@ -2027,7 +2027,7 @@
       "VP": 505
     }
   },
-  "MARDİN": {
+  "Mardin": {
     "seats": 6,
     "votes": {
       "AKP": 93655,
@@ -2066,7 +2066,7 @@
       "VP": 77
     }
   },
-  "MERSİN": {
+  "Mersin": {
     "seats": 13,
     "votes": {
       "AKP": 94772,
@@ -2105,7 +2105,7 @@
       "VP": 1297
     }
   },
-  "MUĞLA": {
+  "Muğla": {
     "seats": 7,
     "votes": {
       "AKP": 162952,
@@ -2144,7 +2144,7 @@
       "VP": 634
     }
   },
-  "MUŞ": {
+  "Muş": {
     "seats": 3,
     "votes": {
       "AKP": 41707,
@@ -2183,7 +2183,7 @@
       "VP": 311
     }
   },
-  "NEVŞEHİR": {
+  "Nevşehir": {
     "seats": 3,
     "votes": {
       "AKP": 60729,
@@ -2222,7 +2222,7 @@
       "VP": 110
     }
   },
-  "NİĞDE": {
+  "Niğde": {
     "seats": 3,
     "votes": {
       "AKP": 75448,
@@ -2261,7 +2261,7 @@
       "VP": 257
     }
   },
-  "ORDU": {
+  "Ordu": {
     "seats": 6,
     "votes": {
       "AKP": 183458,
@@ -2300,7 +2300,7 @@
       "VP": 512
     }
   },
-  "OSMANİYE": {
+  "Osmaniye": {
     "seats": 4,
     "votes": {
       "AKP": 79045,
@@ -2339,7 +2339,7 @@
       "VP": 397
     }
   },
-  "RİZE": {
+  "Rize": {
     "seats": 3,
     "votes": {
       "AKP": 92228,
@@ -2378,7 +2378,7 @@
       "VP": 308
     }
   },
-  "SAKARYA": {
+  "Sakarya": {
     "seats": 8,
     "votes": {
       "AKP": 224925,
@@ -2417,7 +2417,7 @@
       "VP": 722
     }
   },
-  "SAMSUN": {
+  "Samsun": {
     "seats": 9,
     "votes": {
       "AKP": 289938,
@@ -2456,7 +2456,7 @@
       "VP": 1109
     }
   },
-  "SİİRT": {
+  "Siirt": {
     "seats": 3,
     "votes": {
       "AKP": 54999,
@@ -2495,7 +2495,7 @@
       "VP": 246
     }
   },
-  "SİNOP": {
+  "Sinop": {
     "seats": 2,
     "votes": {
       "AKP": 49492,
@@ -2534,7 +2534,7 @@
       "VP": 328
     }
   },
-  "SİVAS": {
+  "Sivas": {
     "seats": 5,
     "votes": {
       "AKP": 99292,
@@ -2573,7 +2573,7 @@
       "VP": 333
     }
   },
-  "ŞANLIURFA": {
+  "Şanlıurfa": {
     "seats": 14,
     "votes": {
       "AKP": 295381,
@@ -2612,7 +2612,7 @@
       "VP": 494
     }
   },
-  "ŞIRNAK": {
+  "Şırnak": {
     "seats": 4,
     "votes": {
       "AKP": 59036,
@@ -2651,7 +2651,7 @@
       "VP": 277
     }
   },
-  "TEKİRDAĞ": {
+  "Tekirdağ": {
     "seats": 8,
     "votes": {
       "AKP": 201090,
@@ -2690,7 +2690,7 @@
       "VP": 471
     }
   },
-  "TOKAT": {
+  "Tokat": {
     "seats": 5,
     "votes": {
       "AKP": 120201,
@@ -2729,7 +2729,7 @@
       "VP": 328
     }
   },
-  "TRABZON": {
+  "Trabzon": {
     "seats": 6,
     "votes": {
       "AKP": 179830,
@@ -2768,7 +2768,7 @@
       "VP": 611
     }
   },
-  "TUNCELİ": {
+  "Tunceli": {
     "seats": 2,
     "votes": {
       "AKP": 8180,
@@ -2807,7 +2807,7 @@
       "VP": 107
     }
   },
-  "UŞAK": {
+  "Uşak": {
     "seats": 3,
     "votes": {
       "AKP": 64395,
@@ -2846,7 +2846,7 @@
       "VP": 258
     }
   },
-  "VAN": {
+  "Van": {
     "seats": 8,
     "votes": {
       "AKP": 121569,
@@ -2885,7 +2885,7 @@
       "VP": 260
     }
   },
-  "YALOVA": {
+  "Yalova": {
     "seats": 3,
     "votes": {
       "AKP": 55861,
@@ -2924,7 +2924,7 @@
       "VP": 132
     }
   },
-  "YOZGAT": {
+  "Yozgat": {
     "seats": 4,
     "votes": {
       "AKP": 83203,
@@ -2963,7 +2963,7 @@
       "VP": 98
     }
   },
-  "ZONGULDAK": {
+  "Zonguldak": {
     "seats": 5,
     "votes": {
       "AKP": 125467,

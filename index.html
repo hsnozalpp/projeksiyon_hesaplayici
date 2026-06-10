@@ -2984,9 +2984,11 @@ function renderDistrictOverlay() {
                     <div style="font-weight:900; font-size:26px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:-0.3px; ${isLocallyDisabled ? 'text-decoration:line-through; color:var(--text-secondary);' : ''}">${p}</div>
                 </div>
 
-                <div style="flex:1; display:flex; align-items:center; margin: 0 20px;">
-                    <div style="width:${normalizedBarWidth}%; max-width:calc(100% - 90px); background:${isLocallyDisabled ? '#ddd' : color}; height:38px; border-radius:6px; min-width:4px; transition:width 0.5s ease-out;"></div>
-                    <span style="margin-left:14px; font-weight:900; font-size:26px; white-space:nowrap; ${isLocallyDisabled ? 'text-decoration:line-through; color:#bbb;' : 'color:var(--text);'}">%${realPctStr}</span>
+                <div style="flex:1; display:flex; align-items:center; margin: 0 20px; gap:14px;">
+                    <div style="flex:1; min-width:0;">
+                        <div style="width:${normalizedBarWidth}%; background:${isLocallyDisabled ? '#ddd' : color}; height:38px; border-radius:6px; min-width:4px; transition:width 0.5s ease-out;"></div>
+                    </div>
+                    <span style="width:90px; text-align:right; flex-shrink:0; font-weight:900; font-size:26px; white-space:nowrap; ${isLocallyDisabled ? 'text-decoration:line-through; color:#bbb;' : 'color:var(--text);'}">%${realPctStr}</span>
                 </div>
 
                 <div style="width:80px; text-align:right; flex-shrink:0;">
