@@ -474,8 +474,9 @@
             </div>
         </div>
         
-        <div id="filterBanner" style="display:none; color: white; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; align-items: center; justify-content: space-between; font-weight: bold; box-shadow: var(--shadow);">
-            <span id="filterBannerText" style="font-size: 1.05rem;"></span>
+        <div id="filterBanner" style="display:none; color: white; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; align-items: center; justify-content: space-between; font-weight: bold; box-shadow: var(--shadow); gap: 10px;">
+            <span id="filterBannerText" style="font-size: 1.05rem; flex:1;"></span>
+            <button id="filterSortBtn" onclick="toggleFilterSort()" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; white-space:nowrap;">Sırala: 🏆 MV</button>
             <button onclick="togglePartyFilter(activePartyFilter)" style="background: rgba(255,255,255,0.25); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: 0.2s; font-weight: bold;" onmouseover="this.style.background='rgba(255,255,255,0.35)'" onmouseout="this.style.background='rgba(255,255,255,0.25)'">Filtreyi Temizle ✖</button>
         </div>
 
@@ -498,7 +499,7 @@
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 25px; border-bottom: 2px solid #f0f2f5; padding-bottom: 15px;">
                 
                 <div style="display:flex; align-items:center; gap:12px; flex:1;">
-                    <h2 style="color:var(--text); margin:0; font-size: 2.2rem; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                    <h2 style="color:var(--text); margin:0; font-size: 2.6rem; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
                         <span id="doTitleName"></span>
                         <span id="doTitleWinner" style="margin-left: 12px;"></span>
                     </h2>
@@ -559,6 +560,7 @@ let localDisabledParties = {}; // YENİ: İl bazlı parti iptallerini tutar
 
 let dragCtx = { type: null, idx: null };
 let activePartyFilter = null;
+let filterSortMode = 'mv'; // 'mv' veya 'pct'
 let savedScrollPosition = 0;
 let mapDictionary = {};
 let customDotPositions = {}; 
@@ -1929,9 +1931,18 @@ window.applySorting = function() {
 window.togglePartyFilter = function(party) {
     if (activePartyFilter === party) {
         activePartyFilter = null;
+        filterSortMode = 'mv';
     } else {
         activePartyFilter = party;
+        filterSortMode = 'mv';
     }
+    renderResults(globalResults);
+};
+
+window.toggleFilterSort = function() {
+    filterSortMode = filterSortMode === 'mv' ? 'pct' : 'mv';
+    const btn = $('filterSortBtn');
+    if (btn) btn.textContent = filterSortMode === 'mv' ? 'Sırala: 🏆 MV' : 'Sırala: 📊 Oy %';
     renderResults(globalResults);
 };
 
@@ -2439,12 +2450,29 @@ function renderResults(res){
     if (activePartyFilter) {
         $('filterBanner').style.display = 'flex';
         $('filterBanner').style.background = getPartyColor(activePartyFilter);
-        $('filterBannerText').innerHTML = `🎯 Sadece <b>${activePartyFilter}</b> için sonuç veren çevreler gösteriliyor.`;
-        
-        sortedNames = sortedNames.filter(d => {
-            let dData = getDisplayData(res[d]);
-            return dData.mvs && dData.mvs[activePartyFilter] > 0;
-        });
+
+        const btn = $('filterSortBtn');
+        if (btn) btn.textContent = filterSortMode === 'mv' ? 'Sırala: 🏆 MV' : 'Sırala: 📊 Oy %';
+
+        if (filterSortMode === 'mv') {
+            $('filterBannerText').innerHTML = `🎯 <b>${activePartyFilter}</b> — milletvekili çıkardığı çevreler, alfabetik`;
+            sortedNames = sortedNames.filter(d => {
+                let dData = getDisplayData(res[d]);
+                return dData.mvs && dData.mvs[activePartyFilter] > 0;
+            });
+        } else {
+            $('filterBannerText').innerHTML = `📊 <b>${activePartyFilter}</b> — tüm çevreler, oy oranına göre`;
+            sortedNames = sortedNames.filter(d => {
+                let dData = getDisplayData(res[d]);
+                return (dData.rawVotes && dData.rawVotes[activePartyFilter] > 0);
+            });
+            sortedNames.sort((a, b) => {
+                let da = getDisplayData(res[a]), db = getDisplayData(res[b]);
+                let pctA = da.totalVotes > 0 ? (da.rawVotes[activePartyFilter] || 0) / da.totalVotes : 0;
+                let pctB = db.totalVotes > 0 ? (db.rawVotes[activePartyFilter] || 0) / db.totalVotes : 0;
+                return pctB - pctA;
+            });
+        }
     } else {
         $('filterBanner').style.display = 'none';
     }
@@ -2694,10 +2722,17 @@ document.addEventListener('keydown', function(e) {
 function getSortedDistrictNames() {
     let names = Object.keys(globalResults);
     if(activePartyFilter) {
-        names = names.filter(d => {
-            let dData = getDisplayData(globalResults[d]);
-            return dData.mvs && dData.mvs[activePartyFilter] > 0;
-        });
+        if (filterSortMode === 'pct') {
+            names = names.filter(d => {
+                let dData = getDisplayData(globalResults[d]);
+                return dData.rawVotes && dData.rawVotes[activePartyFilter] > 0;
+            });
+        } else {
+            names = names.filter(d => {
+                let dData = getDisplayData(globalResults[d]);
+                return dData.mvs && dData.mvs[activePartyFilter] > 0;
+            });
+        }
     }
 
     const mbKey = '🌟 Milli Bakiye (Türkiye Geneli)';
@@ -2727,6 +2762,13 @@ function getMiniMapSvg(dName, fillColor) {
     if(!svg || dName.includes('Milli Bakiye')) return '';
     const elements = Array.from(svg.querySelectorAll('path, g, polygon, polyline, rect')).filter(el => el.getAttribute('data-district-name') === dName);
     if (elements.length === 0) return '';
+
+    // getBBox gizli DOM'da 0 döner — geçici olarak görünür yap
+    const wrapper = $('mainContentWrapper');
+    const wasHidden = wrapper && wrapper.style.display === 'none';
+    if (wasHidden) {
+        wrapper.style.cssText += ';visibility:hidden!important;position:absolute!important;display:block!important;';
+    }
 
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     let clonedNodes = [];
@@ -2765,6 +2807,12 @@ function getMiniMapSvg(dName, fillColor) {
         clonedNodes.push(clone.outerHTML);
     });
 
+    if (wasHidden) {
+        wrapper.style.display = 'none';
+        wrapper.style.visibility = '';
+        wrapper.style.position = '';
+    }
+
     if (clonedNodes.length === 0 || minX === Infinity) return '';
 
     let padding = Math.max(maxX - minX, maxY - minY) * 0.15;
@@ -2773,32 +2821,16 @@ function getMiniMapSvg(dName, fillColor) {
     let vbW = (maxX - minX) + padding * 2;
     let vbH = (maxY - minY) + padding * 2;
 
-    return `<svg viewBox="${vbX} ${vbY} ${vbW} ${vbH}" style="width: 56px; height: 56px; display: inline-block; vertical-align: middle; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25)); margin-right: 10px; flex-shrink:0;">${clonedNodes.join('')}</svg>`;
+    return `<svg viewBox="${vbX} ${vbY} ${vbW} ${vbH}" style="width: 72px; height: 72px; display: inline-block; vertical-align: middle; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.28)); flex-shrink:0;">${clonedNodes.join('')}</svg>`;
 }
 
 window.openDistrictOverlay = function(dName) {
     showingAllInOverlay = false;
     savedScrollPosition = document.querySelector('.right-panel').scrollTop;
-
-    // getBBox gizli SVG'de çalışmaz — rengi ve mini haritayı DOM gizlenmeden önce hesapla
-    const itemRaw = globalResults[dName];
-    const displayData = getDisplayData(itemRaw);
-    let winnerParty = null, maxMvs = -1, maxVotes = -1;
-    Object.entries(displayData.mvs).forEach(([p, s]) => {
-        let v = displayData.rawVotes[p] || 0;
-        if (s > maxMvs || (s === maxMvs && v > maxVotes)) { maxMvs = s; maxVotes = v; winnerParty = p; }
-    });
-    if (!winnerParty) Object.entries(displayData.rawVotes).forEach(([p, v]) => { if (v > maxVotes) { maxVotes = v; winnerParty = p; } });
-    const wColor = (winnerParty && !displayData.isMilliBakiye) ? getPartyColor(winnerParty) : 'var(--purple)';
-
-    const cachedMiniMap = getMiniMapSvg(dName, wColor);
-
-    currentOverlayData = { name: dName, data: itemRaw, cachedMiniMap, wColor };
-
+    currentOverlayData = { name: dName, data: globalResults[dName] };
     $('mainContentWrapper').style.display = 'none';
     $('districtOverlay').style.display = 'block';
     document.querySelector('.right-panel').scrollTop = 0;
-
     renderDistrictOverlay();
 };
 
@@ -2883,7 +2915,7 @@ function renderDistrictOverlay() {
         overlayContainer.style.borderTop = `10px solid ${borderCol}`;
     }
     
-    const titleIcon = currentOverlayData.cachedMiniMap || '';
+    const titleIcon = getMiniMapSvg(dName, wColor);
 
     $('doTitleName').innerHTML = `${titleIcon}<span>${dName.replace('🌟 ', '')}</span>`;
     $('doTitleWinner').innerHTML = winnerTagHtml;
