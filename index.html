@@ -256,12 +256,6 @@
         <div style="display:flex; gap:8px; margin-bottom:0;">
             <select id="archiveSelector" style="flex:2; font-weight: bold; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                 <option value="">-- Arşivden Seç --</option>
-                <option value="nisan2026_2.json">Nisan 2026 • #2</option>
-                <option value="nisan2026_3.json">Nisan 2026 • #3</option>
-                <option value="nisan2026_4.json">Nisan 2026 • #4</option>
-                <option value="mayis2026_1.json">Mayıs 2026 • #1</option>
-                <option value="mayis2026_2.json">Mayıs 2026 • #2</option>
-                <option value="mayis2026_3.json">Mayıs 2026 • #3</option>
             </select>
             <button onclick="loadFromArchive()" class="purple" style="flex:1;">Buluttan Getir ☁️</button>
         </div>
@@ -503,7 +497,7 @@
             <!-- ANA İÇERİK -->
             <div id="doMainContent" style="flex:1; min-width:0;">
                 <!-- Başlık: mini harita | ad | birinci parti — tek satırda yan yana -->
-                <div style="display:flex; align-items:center; gap:24px; margin-bottom:24px; border-bottom:2px solid #f0f2f5; padding-bottom:20px;">
+                <div style="display:flex; align-items:center; gap:24px; margin-bottom:14px; border-bottom:2px solid #f0f2f5; padding-bottom:12px;">
                     <span id="doTitleMapIcon" style="flex-shrink:0;"></span>
                     <div id="doTitleName" style="font-size:2.8rem; font-weight:900; color:var(--text); line-height:1; letter-spacing:-0.5px; flex-shrink:0;"></div>
                     <div id="doTitleWinner"></div>
@@ -2764,7 +2758,27 @@ window.navigateDistrict = function(dir) {
 function getMiniMapSvg(dName, fillColor) {
     const svg = document.querySelector('#svgMapWrapper svg');
     if(!svg || dName.includes('Milli Bakiye')) return '';
-    const elements = Array.from(svg.querySelectorAll('path, g, polygon, polyline, rect')).filter(el => el.getAttribute('data-district-name') === dName);
+
+    // Birden fazla SVG temsili olan seçim çevreleri için tercih edilen SVG id eşleşmesi
+    const svgIdPreference = {
+        'Kocaeli':            id => id.toLowerCase() === 'kocaeli',
+        'İstanbul 1. Bölge':  id => id.toLowerCase() === 'istanbul1',
+        'İstanbul 2. Bölge':  id => id.toLowerCase() === 'istanbul2',
+        'İstanbul 3. Bölge':  id => id.toLowerCase() === 'istanbul3',
+    };
+
+    let elements = Array.from(svg.querySelectorAll('path, g, polygon, polyline, rect'))
+        .filter(el => el.getAttribute('data-district-name') === dName);
+
+    const preferFn = svgIdPreference[dName];
+    if (preferFn && elements.length > 0) {
+        const filtered = elements.filter(el => {
+            const id = el.getAttribute('id') || el.getAttribute('name') || '';
+            return preferFn(id);
+        });
+        if (filtered.length > 0) elements = filtered;
+    }
+
     if (elements.length === 0) return '';
 
     // getBBox gizli DOM'da 0 döner — geçici olarak görünür yap
