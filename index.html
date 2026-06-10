@@ -2108,10 +2108,10 @@ function runProjection() {
         const finalVotes = {};
         for(let p in scoreMap) finalVotes[p] = (scoreMap[p]/(totalScore||1)) * districtTotalVotes;
 
-        // --- YENİ: İL BAZLI PARTİ İPTALLERİNİ (PASİF DURUMLARI) UYGULA ---
+        // --- İL BAZLI PARTİ İPTALLERİNİ (PASİF DURUMLARI) UYGULA ---
         const locallyDisabled = localDisabledParties[dName] || new Set();
         let effectivelyDisabled = new Set(locallyDisabled);
-        
+
         locallyDisabled.forEach(name => {
             let c = coalitions.find(coal => coal.name === name);
             if (c) c.members.forEach(m => effectivelyDisabled.add(m));
@@ -2119,10 +2119,12 @@ function runProjection() {
             if (a) a.members.forEach(m => effectivelyDisabled.add(m));
         });
 
+        const preDisableVotes = {...finalVotes}; // sıralama için sıfırlanmadan önceki oylar
+
         effectivelyDisabled.forEach(p => {
             if (finalVotes[p] !== undefined) {
-                districtTotalVotes -= finalVotes[p]; // Toplam oydan düş (Oylar yandı)
-                finalVotes[p] = 0; // Partinin oyunu sıfırla
+                districtTotalVotes -= finalVotes[p];
+                finalVotes[p] = 0;
             }
         });
         if(districtTotalVotes <= 0) districtTotalVotes = 1;
@@ -2207,8 +2209,9 @@ function runProjection() {
             });
         }
 
-        globalResults[dName] = { 
+        globalResults[dName] = {
             pureVotes: finalVotes,
+            preDisableVotes,
             rawVotes: dhondtInputRaw,
             mvs: finalSeats,
             seats,
@@ -2770,7 +2773,7 @@ function getMiniMapSvg(dName, fillColor) {
     let vbW = (maxX - minX) + padding * 2;
     let vbH = (maxY - minY) + padding * 2;
 
-    return `<svg viewBox="${vbX} ${vbY} ${vbW} ${vbH}" style="width: 140px; height: 140px; display: inline-block; vertical-align: middle; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); margin-right: 12px; border-radius: 8px;">${clonedNodes.join('')}</svg>`;
+    return `<svg viewBox="${vbX} ${vbY} ${vbW} ${vbH}" style="width: 56px; height: 56px; display: inline-block; vertical-align: middle; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25)); margin-right: 10px; flex-shrink:0;">${clonedNodes.join('')}</svg>`;
 }
 
 window.openDistrictOverlay = function(dName) {
@@ -2825,7 +2828,9 @@ function renderDistrictOverlay() {
     const itemRaw = currentOverlayData.data;
     const displayData = getDisplayData(itemRaw);
     
-    const sortedParties = Object.keys(displayData.rawVotes).sort((a,b) => displayData.rawVotes[b] - displayData.rawVotes[a]);
+    // preDisableVotes varsa sıralamayı orijinal oylara göre yap (pasif partiler yerinden oynamasın)
+    const sortRef = itemRaw.preDisableVotes || displayData.rawVotes;
+    const sortedParties = Object.keys(displayData.rawVotes).sort((a,b) => (sortRef[b]||0) - (sortRef[a]||0));
     
     let winnerParty = null;
     let maxMvs = -1;
@@ -2909,24 +2914,29 @@ function renderDistrictOverlay() {
             return;
         }
         
-        const toggleBtn = `<button onclick="toggleLocalParty('${escapeStr(dName)}', '${escapeStr(p)}')" class="status-btn ${!isLocallyDisabled ? 'active' : ''}" style="width:28px; height:28px; background:${!isLocallyDisabled ? 'var(--success)' : '#f5f6f7'}; color:${!isLocallyDisabled ? '#fff' : 'var(--text-secondary)'}; border:none; margin-right:12px; flex-shrink:0; cursor:pointer; font-size:12px; font-weight:bold; box-shadow:0 1px 2px rgba(0,0,0,0.1); transition:0.2s;" title="${!isLocallyDisabled ? 'Seçim çevresinde aktif - Pasife almak için tıkla' : 'Seçim çevresinde pasif - Aktif etmek için tıkla'}">${!isLocallyDisabled ? 'A' : 'P'}</button>`;
-        
+        // Pasif partinin gerçek oy oranını preDisableVotes'tan hesapla
+        const preTotal = Object.values(itemRaw.preDisableVotes || {}).reduce((a,b)=>a+b,0) || displayData.totalVotes;
+        const realPct = preTotal > 0 ? (((itemRaw.preDisableVotes||{})[p] || 0) / preTotal * 100) : pctNum;
+        const realPctStr = realPct.toFixed(2);
+
+        const toggleBtn = `<button onclick="toggleLocalParty('${escapeStr(dName)}', '${escapeStr(p)}')" class="status-btn ${!isLocallyDisabled ? 'active' : ''}" style="width:30px; height:30px; background:${!isLocallyDisabled ? 'var(--success)' : '#f5f6f7'}; color:${!isLocallyDisabled ? '#fff' : 'var(--text-secondary)'}; border:none; margin-right:14px; flex-shrink:0; cursor:pointer; font-size:12px; font-weight:bold; box-shadow:0 1px 2px rgba(0,0,0,0.1); transition:0.2s;" title="${!isLocallyDisabled ? 'Seçim çevresinde aktif - Pasife almak için tıkla' : 'Seçim çevresinde pasif - Aktif etmek için tıkla'}">${!isLocallyDisabled ? 'A' : 'P'}</button>`;
+
         listHtml += `
-            <div class="data-row" style="display:flex; justify-content:space-between; align-items:center; border-left: 4px solid ${color}; padding: 12px 16px; border-radius: 6px; border-bottom: 1px solid var(--bg); background: var(--surface); opacity: ${isLocallyDisabled ? '0.65' : '1'}; filter: ${isLocallyDisabled ? 'grayscale(0.5)' : 'none'};">
-                <div style="width:160px; display:flex; align-items:center;">
+            <div class="data-row" style="display:flex; justify-content:space-between; align-items:center; border-left: 4px solid ${color}; padding: 14px 18px; border-radius: 6px; border-bottom: 1px solid var(--bg); background: var(--surface); opacity: ${isLocallyDisabled ? '0.6' : '1'};">
+                <div style="width:170px; display:flex; align-items:center;">
                     ${toggleBtn}
-                    <div style="font-weight:bold; font-size:15px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${escapeStr(p)}">${p}</div>
-                </div>
-                
-                <div style="flex:1; display:flex; align-items:center; margin: 0 15px;">
-                    <div style="width:${pctNum}%; max-width:calc(100% - 60px); background:${isLocallyDisabled ? 'var(--border)' : color}; height:24px; border-radius:6px; min-width:4px; transition:width 0.5s ease-out;"></div>
-                    <span style="margin-left:8px; font-weight:bold; font-size:15px; color:var(--text); ${isLocallyDisabled || !hasPassed ? 'text-decoration: line-through; color: #ef9a9a;' : ''}">${isLocallyDisabled ? 'Aday Yok' : '%'+pctStr}</span>
+                    <div style="font-weight:bold; font-size:16px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; ${isLocallyDisabled ? 'text-decoration:line-through; color:var(--text-secondary);' : ''}" title="${escapeStr(p)}">${p}</div>
                 </div>
 
-                <div style="width:110px; text-align:right;">
+                <div style="flex:1; display:flex; align-items:center; margin: 0 16px;">
+                    <div style="width:${realPct}%; max-width:calc(100% - 65px); background:${isLocallyDisabled ? '#ccc' : color}; height:26px; border-radius:6px; min-width:4px; transition:width 0.5s ease-out;"></div>
+                    <span style="margin-left:10px; font-weight:bold; font-size:16px; ${isLocallyDisabled ? 'text-decoration:line-through; color:#bbb;' : (!hasPassed ? 'text-decoration:line-through; color:#ef9a9a;' : 'color:var(--text);')}">%${realPctStr}</span>
+                </div>
+
+                <div style="width:120px; text-align:right;">
                     ${s > 0 && !isLocallyDisabled
-                        ? `<span class="mv-tag" style="font-size:14px; padding:6px 12px; background:${color}; box-shadow: var(--shadow);">${s} Mv</span>` 
-                        : ``}
+                        ? `<span class="mv-tag" style="font-size:15px; padding:7px 14px; background:${color}; box-shadow: var(--shadow);">${s} Mv</span>`
+                        : (isLocallyDisabled ? `<span style="font-size:11px; color:#bbb; font-weight:bold;">pasif</span>` : ``)}
                 </div>
             </div>
         `;
