@@ -268,6 +268,9 @@
         <button id="mapModeToggleBtn" onclick="toggleMapMode()" style="flex:1; background:var(--surface); color:var(--text); border-radius:6px; font-size:12px; font-weight:bold; padding:8px 10px; border:1px solid var(--border); display:flex; align-items:center; gap:6px; cursor:pointer; transition:0.2s; box-shadow:var(--shadow); white-space:nowrap;">
             <span>🔄</span> Partiler
         </button>
+        <button id="digerDisplayBtn" onclick="toggleDigerDisplay()" style="background:var(--danger); color:white; border-radius:6px; font-size:12px; font-weight:bold; padding:8px 10px; border:1px solid var(--danger); display:flex; align-items:center; gap:6px; cursor:pointer; transition:0.2s; box-shadow:var(--shadow); white-space:nowrap;" title="Diğer kategorileri görünümde göster/gizle">
+            🗂️ Diğer
+        </button>
         <button id="localEditToggleBtn" onclick="toggleLocalEditButtons()" style="background:var(--surface); color:var(--text-secondary); border-radius:6px; font-size:12px; font-weight:bold; padding:8px 10px; border:1px solid var(--border); display:flex; align-items:center; gap:6px; cursor:pointer; transition:0.2s; box-shadow:var(--shadow);" title="İl bazlı aktif/pasif düzenlemeyi aç/kapat">
             🔧
         </button>
@@ -573,7 +576,8 @@ let showLocalToggleButtons = false;
 let savedScrollPosition = 0;
 let mapDictionary = {};
 let customDotPositions = {}; 
-let mapMode = 'party'; // 'party' | 'alliance' | 'diger'
+let mapMode = 'party'; // 'party' | 'alliance'
+let digerDisplayEnabled = true;
 let isFullscreen = false; // Harita tam ekran modu bayrağı
 
 // Yeni Ara Seçim İnceleme Değişkenleri
@@ -596,80 +600,63 @@ function blendWithWhite(hexColor, whiteRatio) {
 }
 
 // Global Veri Görünüm Yöneticisi
+// Diğer display katmanı mapMode'dan bağımsız; önce Diğer, sonra ittifak gruplandırması uygulanır.
 function getDisplayData(item) {
-    if (mapMode === 'party' || item.isMilliBakiye) {
-        return {
-            rawVotes: item.rawVotes,
-            mvs: item.mvs,
-            totalVotes: item.totalVotes,
-            passed: item.passed,
-            seats: item.seats,
-            isMilliBakiye: item.isMilliBakiye
-        };
+    if (item.isMilliBakiye) {
+        return { rawVotes: item.rawVotes, mvs: item.mvs, totalVotes: item.totalVotes, passed: item.passed, seats: item.seats, isMilliBakiye: true };
     }
 
-    if (mapMode === 'diger') {
-        let groupedVotes = {};
-        let groupedMvs = {};
-        let partyToDiger = {};
+    // partyToKey: her partiyi hangi görüntü adıyla göstereceğimizi tutar
+    const partyToKey = {};
+
+    // Katman 1: Diğer (en yüksek öncelik — digerDisplayEnabled ise geçerli)
+    if (digerDisplayEnabled) {
         digerGroups.forEach(d => {
-            if (d.isEnabled !== false) d.members.forEach(m => partyToDiger[m] = d.name);
+            if (d.isEnabled !== false) d.members.forEach(m => { partyToKey[m] = d.name; });
         });
-        Object.entries(item.rawVotes).forEach(([p, v]) => {
-            let gKey = partyToDiger[p] || p;
-            groupedVotes[gKey] = (groupedVotes[gKey] || 0) + v;
-        });
-        Object.entries(item.mvs).forEach(([p, s]) => {
-            let gKey = partyToDiger[p] || p;
-            groupedMvs[gKey] = (groupedMvs[gKey] || 0) + s;
-        });
-        return { rawVotes: groupedVotes, mvs: groupedMvs, totalVotes: item.totalVotes, passed: item.passed, seats: item.seats, isMilliBakiye: item.isMilliBakiye };
     }
 
-    // alliance mode
-    let groupedVotes = {};
-    let groupedMvs = {};
+    // Katman 2: İttifak (Diğer'e atanmamış partilere uygulanır)
+    if (mapMode === 'alliance') {
+        electoralAlliances.forEach(a => {
+            if (a.isEnabled !== false) {
+                a.members.forEach(m => { if (!partyToKey[m]) partyToKey[m] = a.name; });
+            }
+        });
+    }
 
-    let partyToAlliance = {};
-    electoralAlliances.forEach(a => {
-        if (a.isEnabled !== false) {
-            a.members.forEach(m => partyToAlliance[m] = a.name);
-        }
-    });
+    // Eğer hiç gruplama yoksa ham veriyi döndür
+    if (Object.keys(partyToKey).length === 0) {
+        return { rawVotes: item.rawVotes, mvs: item.mvs, totalVotes: item.totalVotes, passed: item.passed, seats: item.seats };
+    }
 
+    const groupedVotes = {};
+    const groupedMvs = {};
     Object.entries(item.rawVotes).forEach(([p, v]) => {
-        let gKey = partyToAlliance[p] || p;
+        const gKey = partyToKey[p] || p;
         groupedVotes[gKey] = (groupedVotes[gKey] || 0) + v;
     });
-
     Object.entries(item.mvs).forEach(([p, s]) => {
-        let gKey = partyToAlliance[p] || p;
+        const gKey = partyToKey[p] || p;
         groupedMvs[gKey] = (groupedMvs[gKey] || 0) + s;
     });
 
-    return {
-        rawVotes: groupedVotes,
-        mvs: groupedMvs,
-        totalVotes: item.totalVotes,
-        passed: item.passed,
-        seats: item.seats,
-        isMilliBakiye: item.isMilliBakiye
-    };
+    return { rawVotes: groupedVotes, mvs: groupedMvs, totalVotes: item.totalVotes, passed: item.passed, seats: item.seats };
 }
 
 function hasEntityPassed(entityName, passedSet) {
     if (passedSet.has(entityName)) return true;
+    if (digerDisplayEnabled) {
+        const dg = digerGroups.find(d => d.name === entityName);
+        if (dg) return dg.members.some(m => passedSet.has(m));
+    }
     const a = electoralAlliances.find(all => all.name === entityName);
     if (a) return a.members.some(m => passedSet.has(m));
-    const dg = digerGroups.find(d => d.name === entityName);
-    if (dg) return dg.members.some(m => passedSet.has(m));
     return false;
 }
 
 function toggleMapMode() {
-    if (mapMode === 'party') mapMode = 'alliance';
-    else if (mapMode === 'alliance') mapMode = 'diger';
-    else mapMode = 'party';
+    mapMode = mapMode === 'party' ? 'alliance' : 'party';
     activePartyFilter = null;
 
     const btn = $('mapModeToggleBtn');
@@ -678,18 +665,36 @@ function toggleMapMode() {
         btn.style.background = 'var(--surface)';
         btn.style.color = 'var(--text)';
         btn.style.borderColor = 'var(--primary)';
-    } else if (mapMode === 'alliance') {
+    } else {
         btn.innerHTML = '<span style="font-size:18px;">🤝</span> Görünüm: İttifaklar';
         btn.style.background = 'var(--teal)';
         btn.style.color = 'white';
         btn.style.borderColor = 'var(--teal)';
-    } else {
-        btn.innerHTML = '<span style="font-size:18px;">🗂️</span> Görünüm: Diğer';
+    }
+
+    if (Object.keys(globalResults).length > 0) {
+        renderResults(globalResults);
+        if (currentOverlayData && $('districtOverlay').style.display === 'block') {
+            currentOverlayData.data = globalResults[currentOverlayData.name];
+            renderDistrictOverlay();
+        }
+    }
+}
+
+function toggleDigerDisplay() {
+    digerDisplayEnabled = !digerDisplayEnabled;
+    const btn = $('digerDisplayBtn');
+    if (digerDisplayEnabled) {
         btn.style.background = 'var(--danger)';
         btn.style.color = 'white';
         btn.style.borderColor = 'var(--danger)';
+        btn.innerHTML = '🗂️ Diğer';
+    } else {
+        btn.style.background = 'var(--surface)';
+        btn.style.color = 'var(--text-secondary)';
+        btn.style.borderColor = 'var(--border)';
+        btn.innerHTML = '🗂️ Diğer';
     }
-
     if (Object.keys(globalResults).length > 0) {
         renderResults(globalResults);
         if (currentOverlayData && $('districtOverlay').style.display === 'block') {
@@ -1140,13 +1145,13 @@ function updateMapColors() {
                         });
                         
                         let colors = mpList.map(p => {
+                            if (digerDisplayEnabled) {
+                                const dg = digerGroups.find(d => d.isEnabled !== false && d.members.includes(p));
+                                if (dg && dg.color) return dg.color;
+                            }
                             if (mapMode === 'alliance') {
                                 let aObj = partyToAlliance[p];
                                 if (aObj && aObj.color) return aObj.color;
-                            }
-                            if (mapMode === 'diger') {
-                                const dg = digerGroups.find(d => d.isEnabled !== false && d.members.includes(p));
-                                if (dg && dg.color) return dg.color;
                             }
                             return getPartyColor(p);
                         });
@@ -1910,7 +1915,7 @@ async function loadSeatData(inp) {
 function saveProject() {
     const projectData = {
         meta: { version: "10.0", date: new Date().toISOString() },
-        datasets, extraParties, coalitions, electoralAlliances, digerGroups, customSeatOverrides, customDotPositions,
+        datasets, extraParties, coalitions, electoralAlliances, digerGroups, digerDisplayEnabled, customSeatOverrides, customDotPositions,
         localDisabledParties: (() => {
             let obj = {};
             for(let k in localDisabledParties) obj[k] = Array.from(localDisabledParties[k]);
@@ -2010,6 +2015,16 @@ function applyProjectData(data) {
         isEnabled: d.isEnabled!==false,
         color: d.color || '#888888'
     }));
+
+    if (data.digerDisplayEnabled !== undefined) {
+        digerDisplayEnabled = data.digerDisplayEnabled;
+        const btn = $('digerDisplayBtn');
+        if (btn) {
+            btn.style.background = digerDisplayEnabled ? 'var(--danger)' : 'var(--surface)';
+            btn.style.color = digerDisplayEnabled ? 'white' : 'var(--text-secondary)';
+            btn.style.borderColor = digerDisplayEnabled ? 'var(--danger)' : 'var(--border)';
+        }
+    }
 
     customSeatOverrides = data.customSeatOverrides || {};
     customDotPositions = data.customDotPositions || {};
@@ -3034,15 +3049,17 @@ function renderDistrictOverlay() {
     const itemRaw = currentOverlayData.data;
     const displayData = getDisplayData(itemRaw);
     
-    // preDisableVotes yoksa rawVotes kullan; alliance/diger modunda üye oylarını topla
+    // preDisableVotes yoksa rawVotes kullan; Diğer (öncelikli) ve ittifak gruplama
     function preVotesOf(entityName) {
-        if (mapMode === 'alliance') {
-            const al = electoralAlliances.find(a => a.isEnabled !== false && a.name === entityName);
-            if (al) return al.members.reduce((s,m) => s + ((itemRaw.preDisableVotes||{})[m]||0), 0);
-        }
-        if (mapMode === 'diger') {
+        if (digerDisplayEnabled) {
             const dg = digerGroups.find(d => d.isEnabled !== false && d.name === entityName);
             if (dg) return dg.members.reduce((s,m) => s + ((itemRaw.preDisableVotes||{})[m]||0), 0);
+        }
+        if (mapMode === 'alliance') {
+            const al = electoralAlliances.find(a => a.isEnabled !== false && a.name === entityName);
+            if (al) return al.members
+                .filter(m => !(digerDisplayEnabled && digerGroups.some(d => d.isEnabled !== false && d.members.includes(m))))
+                .reduce((s,m) => s + ((itemRaw.preDisableVotes||{})[m]||0), 0);
         }
         return (itemRaw.preDisableVotes||{})[entityName] || (displayData.rawVotes[entityName] || 0);
     }
