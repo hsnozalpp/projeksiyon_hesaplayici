@@ -101,7 +101,7 @@
         .action-bar { position: sticky; bottom: -20px; background: var(--surface); z-index: 10; padding-top: 16px; padding-bottom: 20px; border-top: 2px solid #f0f2f5; margin-top: auto; }
 
         /* PROJEKSİYON STİLLERİ */
-        #results { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; align-items: start; }
+        #results { display: block; }
         
         .dist-card { background: var(--surface); border-radius: 12px; padding: 16px; box-shadow: var(--shadow); border: 1px solid var(--border); border-top: 8px solid var(--border); transition: transform 0.2s; }
         .dist-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
@@ -2975,132 +2975,138 @@ function renderResults(res){
     const domRatio = (parseFloat($('dominantWhiteInp').value) || 20) / 100;
     const pluRatio = (parseFloat($('pluralityWhiteInp').value) || 40) / 100;
 
-    sortedNames.forEach(d => {
-        const itemRaw = res[d];
-        const displayData = getDisplayData(itemRaw);
-        
-        const card = document.createElement('div');
-        card.className = 'dist-card';
-        card.setAttribute('data-district', d);
-        card.style.cursor = 'pointer';
-        card.title = 'Detayları görmek için tıklayın';
-        
-        let borderCol = 'var(--border)';
-        if (displayData.isMilliBakiye) {
-            borderCol = 'var(--purple)';
-        } else {
-            let maxMvs = -1;
-            let maxVotes = -1;
-            let winnerEntity = null;
-            
-            // Kart rengini (sınır) vekil sayısına (eşitse oya) göre seç:
-            Object.entries(displayData.mvs).forEach(([p, s]) => {
-                let v = displayData.rawVotes[p] || 0;
-                if (s > maxMvs || (s === maxMvs && v > maxVotes)) {
-                    maxMvs = s; maxVotes = v; winnerEntity = p;
-                }
-            });
-            // Vekil çıkaran yoksa en çok oy alana bak:
-            if (!winnerEntity) {
-                Object.entries(displayData.rawVotes).forEach(([p, v]) => {
-                    if(v > maxVotes) { maxVotes = v; winnerEntity = p; }
-                });
-            }
-            
-            if (winnerEntity) {
-                const wColor = getPartyColor(winnerEntity);
-                const isDominant = (maxMvs > displayData.seats / 2);
-                borderCol = blendWithWhite(wColor, isDominant ? domRatio : pluRatio);
-            }
+    // ── Yardımcı: sadece Diğer gruplama uygular, ittifak birleştirmesi yapmaz ──
+    function getPartyModeData(item) {
+        const partyToKey = {};
+        if (digerDisplayEnabled) {
+            digerGroups.forEach(dg => { if (dg.isEnabled !== false) dg.members.forEach(m => { partyToKey[m] = dg.name; }); });
         }
-        card.style.borderTop = `8px solid ${borderCol}`;
-
-        card.onclick = (e) => {
-            if(e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.closest('.seat-editor') || e.target.closest('.expand-btn')) return;
-            if (isSelectionModeActive) {
-                toggleDistrictSelection(d);
-            } else {
-                openDistrictOverlay(d);
-            }
-        };
-        
-        let tier1Html = '', tier2Html = '', tier3Html = '';
-        let tier2Count = 0, tier3Count = 0;
-        
-        Object.entries(displayData.rawVotes).sort((a,b)=>b[1]-a[1]).forEach(([p, v])=> {
-            if(v < 10) return;
-            
-            const pctVal = (v / (displayData.totalVotes || 1)) * 100;
-            const pct = pctVal.toFixed(2);
-            const totalMv = displayData.mvs[p] || 0;
-            const hasPassed = hasEntityPassed(p, displayData.passed);
-
-            const isCoal = coalitions.find(c => c.name === p && c.isEnabled !== false);
-            const isAlliance = mapMode === 'party' ? electoralAlliances.find(a => a.members.includes(p) && a.isEnabled !== false) : null;
-            const pColor = getPartyColor(p);
-
-            const rowHtml = `
-                <div class="p-line ${isCoal?'is-coal':''}">
-                    <div class="p-line-top">
-                        <div class="p-name-area">
-                            <span class="p-name">
-                                <div style="width:10px;height:10px;border-radius:50%;background:${pColor};display:inline-block;box-shadow:0 1px 2px rgba(0,0,0,0.2);"></div>
-                                ${p} 
-                                ${isAlliance ? `<span class="alliance-tag" style="background:${isAlliance.color||'var(--teal)'}30; color:${isAlliance.color||'var(--teal)'}; font-weight:bold;">${isAlliance.name}</span>` : ''}
-                            </span>
-                            ${isCoal && mapMode === 'party' ? `<span class="p-coal-members">${isCoal.members.join(', ')}</span>` : ''}
-                        </div>
-                        <div class="p-stats-area">
-                            <span class="p-pct" style="${!hasPassed ? 'text-decoration: line-through; color: #ef9a9a;' : ''}">%${pct}</span>
-                            ${!hasPassed ? `<span class="fail-tag">Baraj Altı</span>` : ''}
-                            ${totalMv > 0 ? `<span class="mv-tag" style="background:${pColor};">${totalMv} Mv</span>` : ''}
-                        </div>
-                    </div>
-                    <div class="p-line-bar">
-                        <div class="p-line-bar-fill" style="width:${pctVal}%; background:${pColor};"></div>
-                    </div>
-                </div>
-            `;
-            
-            if (totalMv > 0) tier1Html += rowHtml;
-            else if (pctVal >= 1) { tier2Html += rowHtml; tier2Count++; } 
-            else { tier3Html += rowHtml; tier3Count++; }
-        });
-        
-        let cardContent = `
-            <h3>
-                <div style="display:flex; align-items:center;">
-                    ${d.replace('🌟 ', '')} 
-                    ${(localDisabledParties[d] && localDisabledParties[d].size > 0) ? `<span title="Bu çevrede bazı partiler pasife alınmış" style="font-size:12px; cursor:help; margin-left:8px; background:#fff3cd; color:#856404; padding:2px 6px; border-radius:4px; border:1px solid #ffeeba; display:inline-flex; align-items:center;">🛠️ Özel</span>` : ''}
-                </div>
-                ${displayData.isMilliBakiye 
-                    ? `<span class="seat-editor" style="background:var(--purple); color:white; border-color:var(--purple); cursor:default;">${displayData.seats} MB Koltuğu</span>`
-                    : `<span class="seat-editor" title="Koltuk sayısını değiştir"><input type="number" value="${displayData.seats}" onchange="updateSeatOverride('${escapeStr(d)}', this.value)"> Mv</span>`
-                }
-            </h3>`;
-            
-        if (displayData.isMilliBakiye) {
-            cardContent += `<div style="font-size:11.5px; color:var(--purple); margin-top:-10px; margin-bottom:14px; font-weight:bold; padding-bottom:10px; border-bottom:1px dashed #e1bee7;">Biriken Artık Oylara Göre Havuz Dağılımı</div>`;
+        if (Object.keys(partyToKey).length === 0) {
+            return { rawVotes: {...(item.rawVotes||{})}, mvs: {...(item.mvs||{})}, totalVotes: item.totalVotes, passed: item.passed||[], seats: item.seats, isMilliBakiye: item.isMilliBakiye };
         }
-            
-        cardContent += `<div class="tier tier-1">${tier1Html || '<div class="p-line" style="justify-content:center; color:#999; font-size:12px; padding:12px 0;">Mv çıkaran yapı yok</div>'}</div>`;
-        
-        let btn1Html = '', btn2Html = '';
-        if (tier2Count > 0) {
-            btn1Html = `<button class="expand-btn t1-btn" onclick="toggleTier(this, 2)">▼ %1 Üzeri Yapılar (${tier2Count})</button>`;
-            if (tier3Count > 0) btn2Html = `<button class="expand-btn t2-btn" style="display:none;" onclick="toggleTier(this, 3)">▼ Diğer Tüm Yapılar (${tier3Count})</button>`;
-        } else if (tier3Count > 0) {
-            btn1Html = `<button class="expand-btn t1-btn" onclick="toggleTier(this, 3)">▼ Diğer Tüm Yapılar (${tier3Count})</button>`;
-        }
+        const gVotes = {}, gMvs = {};
+        const gPassed = new Set();
+        const passedSet = new Set(item.passed || []);
+        Object.entries(item.rawVotes || {}).forEach(([p, v]) => { const k = partyToKey[p]||p; gVotes[k]=(gVotes[k]||0)+v; if(passedSet.has(p)) gPassed.add(k); });
+        Object.entries(item.mvs || {}).forEach(([p, s]) => { const k = partyToKey[p]||p; gMvs[k]=(gMvs[k]||0)+s; });
+        return { rawVotes: gVotes, mvs: gMvs, totalVotes: item.totalVotes, passed: [...gPassed], seats: item.seats, isMilliBakiye: item.isMilliBakiye };
+    }
 
-        if (btn1Html) cardContent += btn1Html;
-        if (tier2Count > 0) cardContent += `<div class="tier tier-2" style="display:none;">${tier2Html}</div>`;
-        if (btn2Html) cardContent += btn2Html;
-        if (tier3Count > 0) cardContent += `<div class="tier tier-3" style="display:none;">${tier3Html}</div>`;
-
-        card.innerHTML = cardContent;
-        area.appendChild(card);
+    // ── Sütunlar: ülke geneli %1+ varlıklar, Diğer gruplama uygulanmış ──
+    const partyToDisplayKey = {};
+    if (digerDisplayEnabled) {
+        digerGroups.forEach(dg => { if (dg.isEnabled !== false) dg.members.forEach(m => { partyToDisplayKey[m] = dg.name; }); });
+    }
+    const entityNat = {};
+    extraParties.forEach(ep => {
+        if (ep.isEnabled === false) return;
+        const nat = parseFloat(ep.nat) || 0;
+        const dk = partyToDisplayKey[ep.name] || ep.name;
+        entityNat[dk] = (entityNat[dk] || 0) + nat;
     });
+    const columns = Object.entries(entityNat)
+        .filter(([, nat]) => nat >= 1)
+        .sort((a, b) => b[1] - a[1])
+        .map(([entity, nat]) => ({ entity, nat, color: getPartyColor(entity) }));
+
+    // ── İttifak başlık gruplaması ──
+    const entityToAlliance = {};
+    electoralAlliances.forEach(a => {
+        if (a.isEnabled !== false) a.members.forEach(m => {
+            const dk = partyToDisplayKey[m] || m;
+            if (!entityToAlliance[dk]) entityToAlliance[dk] = { name: a.name, color: a.color || '#888' };
+        });
+    });
+    const allianceOrder = [];
+    const allianceGroupMap = {};
+    columns.forEach(col => {
+        const al = entityToAlliance[col.entity];
+        const key = al ? al.name : `__${col.entity}`;
+        if (!allianceGroupMap[key]) {
+            allianceGroupMap[key] = { name: al ? al.name : '', color: al ? al.color : col.color, cols: [] };
+            allianceOrder.push(key);
+        }
+        allianceGroupMap[key].cols.push(col);
+    });
+
+    // ── Tablo HTML ──
+    const ths = `padding:7px 5px; text-align:center; font-size:11px; white-space:nowrap; border:1px solid var(--border);`;
+    const tds = `padding:5px 4px; text-align:center; font-size:12px; white-space:nowrap; border-right:1px solid var(--border);`;
+
+    let allianceHeaderHtml = `<th rowspan="2" style="${ths} text-align:left; min-width:110px; max-width:160px; position:sticky; left:0; background:#f0f4ff; z-index:2; font-size:12px; border-right:2px solid var(--border); font-weight:800; color:var(--primary); vertical-align:middle;">Seçim Çevresi</th>`;
+    let partyHeaderHtml = '';
+    allianceOrder.forEach(key => {
+        const g = allianceGroupMap[key];
+        if (g.name) {
+            allianceHeaderHtml += `<th colspan="${g.cols.length}" style="${ths} border-bottom:3px solid ${g.color}; color:${g.color}; font-weight:900; font-size:11px; letter-spacing:0.3px;">${g.name.toUpperCase()}</th>`;
+        } else {
+            allianceHeaderHtml += `<th colspan="${g.cols.length}" style="${ths} border-bottom:3px solid var(--border);"></th>`;
+        }
+        g.cols.forEach(col => {
+            partyHeaderHtml += `<th style="${ths} border-bottom:3px solid ${col.color}; font-weight:700; font-size:10.5px; color:var(--text); padding:5px 4px;" title="${col.entity} — Ülke geneli: %${col.nat.toFixed(1)}">${col.entity}</th>`;
+        });
+    });
+
+    let rowsHtml = '';
+    sortedNames.forEach((d, rIdx) => {
+        const itemRaw = res[d];
+        const dd = itemRaw.isMilliBakiye ? getDisplayData(itemRaw) : getPartyModeData(itemRaw);
+        const totalV = dd.totalVotes || 1;
+
+        let winnerEntity = null, maxMvs = -1, maxVotes = -1;
+        Object.entries(dd.mvs || {}).forEach(([p, s]) => {
+            const v = dd.rawVotes[p] || 0;
+            if (s > maxMvs || (s === maxMvs && v > maxVotes)) { maxMvs = s; maxVotes = v; winnerEntity = p; }
+        });
+        if (!winnerEntity) Object.entries(dd.rawVotes || {}).forEach(([p, v]) => { if (v > maxVotes) { maxVotes = v; winnerEntity = p; } });
+
+        const rowBaseBg = rIdx % 2 === 0 ? 'var(--surface)' : '#f8f9fb';
+        const isMB = !!dd.isMilliBakiye;
+        const hasSpecial = localDisabledParties[d] && localDisabledParties[d].size > 0;
+
+        const seatsBadge = dd.seats > 0 ? `<span style="font-size:10px;color:var(--text-secondary);font-weight:500;margin-left:3px;">(${dd.seats})</span>` : '';
+        const specialBadge = hasSpecial ? `<span title="Özel ayar var" style="font-size:9px;background:#fff3cd;color:#856404;padding:1px 4px;border-radius:3px;margin-left:4px;">🛠️</span>` : '';
+        const distCellStyle = `${tds} text-align:left; font-weight:700; font-size:12px; color:${isMB ? 'var(--purple)' : 'var(--primary)'}; position:sticky; left:0; background:${rowBaseBg}; z-index:1; border-right:2px solid var(--border); padding:5px 8px;`;
+
+        let rowHtml = `<tr data-district="${escapeStr(d)}" style="cursor:pointer; background:${rowBaseBg};"
+            onclick="if(event.target.tagName!='INPUT'){isSelectionModeActive?toggleDistrictSelection('${escapeStr(d)}'):openDistrictOverlay('${escapeStr(d)}')}"
+            onmouseover="this.style.filter='brightness(0.95)'" onmouseout="this.style.filter=''">
+            <td style="${distCellStyle}">${d.replace('🌟 ', '')}${seatsBadge}${specialBadge}</td>`;
+
+        columns.forEach(col => {
+            const v = dd.rawVotes[col.entity] || 0;
+            const seats = dd.mvs[col.entity] || 0;
+            const pct = v / totalV * 100;
+            const isWinner = col.entity === winnerEntity && v > 0;
+
+            let cellBg = 'transparent';
+            if (isWinner) {
+                const isDominant = seats > (dd.seats || 1) * 0.5;
+                cellBg = blendWithWhite(col.color, isDominant ? domRatio : pluRatio);
+            }
+
+            let cellHtml = '';
+            if (pct >= 0.05) {
+                const pctStr = '%' + pct.toFixed(1).replace('.', ',');
+                const seatsHtml = seats > 0 ? ` <b style="color:${col.color};font-size:11px;">[${seats}]</b>` : '';
+                cellHtml = `<span style="font-weight:${isWinner?'800':'400'};color:${isWinner?'var(--text)':'var(--text-secondary)'};">${pctStr}</span>${seatsHtml}`;
+            }
+            rowHtml += `<td style="${tds} background:${cellBg};">${cellHtml}</td>`;
+        });
+        rowHtml += '</tr>';
+        rowsHtml += rowHtml;
+    });
+
+    area.innerHTML = `
+    <div style="overflow-x:auto; border-radius:12px; box-shadow:var(--shadow); border:1px solid var(--border); background:var(--surface);">
+        <table style="border-collapse:collapse; width:100%;">
+            <thead>
+                <tr style="background:#f0f4ff;">${allianceHeaderHtml}</tr>
+                <tr style="background:#f8f9fb;">${partyHeaderHtml}</tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+        </table>
+    </div>`;
 
     updateMapColors();
     if (isSelectionModeActive) updateSelectionUI();
@@ -3647,23 +3653,20 @@ function updateSelectionUI() {
         body.innerHTML = html;
     }
 
-    // 2. Kartları Görsel Olarak Vurgula
-    document.querySelectorAll('.dist-card').forEach(card => {
-        const dName = card.getAttribute('data-district');
+    // 2. Satırları Görsel Olarak Vurgula
+    document.querySelectorAll('[data-district]').forEach(row => {
+        const dName = row.getAttribute('data-district');
         if (isSelectionModeActive && selectedDistricts.size > 0) {
             if (selectedDistricts.has(dName)) {
-                card.style.boxShadow = '0 0 0 4px var(--purple)';
-                card.style.opacity = '1';
-                card.style.transform = 'translateY(-2px)';
+                row.style.outline = '3px solid var(--purple)';
+                row.style.opacity = '1';
             } else {
-                card.style.boxShadow = 'var(--shadow)';
-                card.style.opacity = '0.35';
-                card.style.transform = 'none';
+                row.style.outline = 'none';
+                row.style.opacity = '0.35';
             }
         } else {
-            card.style.boxShadow = 'var(--shadow)';
-            card.style.opacity = '1';
-            card.style.transform = 'none';
+            row.style.outline = 'none';
+            row.style.opacity = '1';
         }
     });
     
