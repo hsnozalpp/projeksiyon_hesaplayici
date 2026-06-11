@@ -324,7 +324,17 @@
     </div>
 
     <div class="card">
-        <label>5. Diğer Kategoriler</label>
+        <label>5. Fermuar Liste</label>
+        <span style="font-size:11px; color:var(--text-secondary); display:block; margin-top:-8px; margin-bottom:10px;">Aynı çatı altındaki partilerin seçim çevresi paylaşımı. Bir çevrede yarışmayan üyelerin oyları, o çevredeki yarışan üyelere orantılı aktarılır.</span>
+        <div class="flex-row">
+            <input id="fermuarName" placeholder="Liste Adı (Örn: Sol Federasyon)">
+            <button onclick="addFermuar()" class="blue" style="width:40px; font-size: 16px;">+</button>
+        </div>
+        <div id="fermuarArea" class="scroll-area"></div>
+    </div>
+
+    <div class="card">
+        <label>6. Diğer Kategoriler</label>
         <span style="font-size:11px; color:var(--text-secondary); display:block; margin-top:-8px; margin-bottom:10px;">Partileri görsel olarak gruplandırır. Hesaplama değişmez; her parti kendi başına milletvekili çıkarır. Bir parti aynı anda ittifakta, ortak listede ve Diğer'de olabilir.</span>
         <div class="flex-row">
             <input id="digerName" placeholder="Kategori Adı (Örn: Bağımsızlar)">
@@ -334,7 +344,7 @@
     </div>
 
     <div class="card" id="cardKoltukVerisi">
-        <label>6. İl/Çevre Koltuk Verisi</label>
+        <label>7. İl/Çevre Koltuk Verisi</label>
         <span style="font-size:11px; color:var(--text-secondary); display:block; margin-top:-8px; margin-bottom:10px;">Tüm illerin koltuk sayılarını topluca değiştirmek için .JSON formatında veri yükleyebilir veya mevcut dağılımı indirebilirsiniz. Eklenen veriler ana dosyadaki sayıları ezer.</span>
         <div style="display:flex; gap:8px;">
             <button onclick="downloadSeatData()" class="blue" style="flex:1;">📥 Koltukları İndir (.JSON)</button>
@@ -343,9 +353,9 @@
         </div>
     </div>
 
-    <!-- 7. ADIM HARİTA VERİSİ -->
+    <!-- 8. ADIM HARİTA VERİSİ -->
     <div class="card" style="border-left: 4px solid var(--primary); background: #f8faff;">
-        <label>7. Harita Verisi</label>
+        <label>8. Harita Verisi</label>
         <span style="font-size:11px; color:var(--text-secondary); display:block; margin-top:-8px; margin-bottom:10px;">Sonuçları sağ paneldeki haritada boyamak için SVG haritanızı ve şehir eşleştirme sözlüğünüzü tanımlayın.</span>
         
         <div id="haritaManuelYukle" class="flex-row" style="gap:12px; align-items: flex-end;">
@@ -564,6 +574,7 @@ let extraParties = [];
 let coalitions = []; 
 let electoralAlliances = [];
 let digerGroups = [];
+let fermuarListes = [];
 let globalParties = new Set();
 let customSeatOverrides = {};
 let globalResults = {};
@@ -1589,6 +1600,7 @@ function updateGlobalParties(){
     renderExtraParties();
     renderCoalitions();
     renderAlliances();
+    renderFermuar();
     renderDiger();
 }
 
@@ -1612,14 +1624,15 @@ window.handleDrop = function(e, targetType, targetIdx) {
     e.preventDefault(); e.currentTarget.classList.remove('drag-over');
     if (dragCtx.type !== targetType || dragCtx.idx === targetIdx || dragCtx.idx === null) return;
     
-    let arr = targetType === 'party' ? extraParties : targetType === 'coal' ? coalitions : targetType === 'alliance' ? electoralAlliances : digerGroups;
+    let arr = targetType === 'party' ? extraParties : targetType === 'coal' ? coalitions : targetType === 'alliance' ? electoralAlliances : targetType === 'fermuar' ? fermuarListes : digerGroups;
     const item = arr.splice(dragCtx.idx, 1)[0];
     arr.splice(targetIdx, 0, item);
     dragCtx = { type: null, idx: null };
 
-    if (targetType === 'party') { renderExtraParties(); renderCoalitions(); renderAlliances(); renderDiger(); }
+    if (targetType === 'party') { renderExtraParties(); renderCoalitions(); renderAlliances(); renderDiger(); renderFermuar(); }
     if (targetType === 'coal') { renderCoalitions(); renderAlliances(); }
     if (targetType === 'alliance') { renderAlliances(); }
+    if (targetType === 'fermuar') { renderFermuar(); }
     if (targetType === 'diger') { renderDiger(); }
 };
 
@@ -1876,6 +1889,167 @@ window.renameDiger = function(idx, newName) {
     renderDiger();
 };
 
+function addFermuar() {
+    const name = $('fermuarName').value.trim();
+    if (!name) return;
+    fermuarListes.push({ name, members: [], districtMap: {}, openParties: {}, isOpen: true, isEnabled: true });
+    $('fermuarName').value = '';
+    renderFermuar();
+}
+
+function renderFermuar() {
+    if (!$('fermuarArea')) return;
+    const allParties = extraParties.map(e => e.name).sort((a, b) => a.localeCompare(b, 'tr'));
+    const districts = getMasterDistricts();
+
+    $('fermuarArea').innerHTML = fermuarListes.map((fl, idx) => {
+        const memberRows = fl.isOpen ? fl.members.map(m => {
+            const assigned = fl.districtMap[m] || [];
+            const isDistOpen = (fl.openParties || {})[m];
+            const distGrid = isDistOpen && districts.length > 0 ? `
+                <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:4px; max-height:160px; overflow-y:auto; padding:6px; border:1px dashed var(--border); border-radius:6px; margin-top:4px;">
+                    ${districts.map(d => `
+                        <label class="coal-sim-box ${assigned.includes(d)?'active':''}" style="${assigned.includes(d)?'background:var(--primary);border-color:var(--primary);color:white;':''}" title="${escapeStr(d)}">
+                            <input type="checkbox" style="display:none;" ${assigned.includes(d)?'checked':''} onchange="toggleFermuarDistrict(${idx},'${escapeStr(m)}','${escapeStr(d)}')">
+                            <span style="font-size:10px;">${d}</span>
+                        </label>`).join('')}
+                </div>` : (isDistOpen && districts.length === 0 ? '<div style="font-size:11px;color:var(--text-secondary);padding:4px;">Önce veri yükleyin.</div>' : '');
+
+            return `<div style="border-top:1px dashed var(--border); padding:5px 0 2px 0; margin-top:2px;">
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <div style="width:10px;height:10px;border-radius:50%;background:${getPartyColor(m)};flex-shrink:0;"></div>
+                    <span style="font-weight:bold;font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${m}</span>
+                    <span style="font-size:11px;color:var(--text-secondary);white-space:nowrap;">${assigned.length} çevre</span>
+                    <button onclick="fermuarListes[${idx}].districtMap['${escapeStr(m)}']=[];renderFermuar();if(Object.keys(globalResults).length>0)runProjection();" style="font-size:10px;padding:2px 5px;background:#f5f6f7;color:var(--text-secondary);border:1px solid var(--border);border-radius:4px;cursor:pointer;white-space:nowrap;">Temizle</button>
+                    <button onclick="toggleFermuarPartyOpen(${idx},'${escapeStr(m)}')" style="font-size:12px;width:22px;height:22px;padding:0;background:#e8f0fe;color:var(--primary);border:1px solid var(--primary);border-radius:4px;cursor:pointer;flex-shrink:0;">${isDistOpen ? '▲' : '▼'}</button>
+                </div>
+                ${distGrid}
+            </div>`;
+        }).join('') : '';
+
+        return `<div class="data-row" style="border-left-color:var(--primary);" onmousedown="if(event.target.tagName==='INPUT')this.removeAttribute('draggable');else this.setAttribute('draggable','true');" ondragstart="handleDragStart(event,'fermuar',${idx})" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event,'fermuar',${idx})">
+            <div class="flex-row" style="margin-bottom:0;">
+                <div class="drag-handle" title="Sürükle bırak ile sırala">☰</div>
+                <button class="toggle-btn" onclick="fermuarListes[${idx}].isOpen=!fermuarListes[${idx}].isOpen;renderFermuar()">${fl.isOpen ? '▲' : '▼'}</button>
+                <button class="status-btn ${fl.isEnabled !== false ? 'active' : ''}" style="background:${fl.isEnabled !== false ? 'var(--success)' : '#f5f6f7'};color:${fl.isEnabled !== false ? '#fff' : 'var(--text-secondary)'};border-color:${fl.isEnabled !== false ? 'var(--success)' : 'var(--border)'};" onclick="fermuarListes[${idx}].isEnabled=!(fermuarListes[${idx}].isEnabled!==false);renderFermuar();if(Object.keys(globalResults).length>0)runProjection();" title="${fl.isEnabled !== false ? 'Şu an Aktif' : 'Şu an Pasif'}">${fl.isEnabled !== false ? 'A' : 'P'}</button>
+                <input type="text" class="editable-name" value="${escapeStr(fl.name)}" onchange="renameFermuar(${idx},this.value)" onkeyup="if(event.key==='Enter')this.blur()">
+                <button onclick="autoDistributeFermuar(${idx})" style="flex-shrink:0;padding:4px 8px;background:#e8f0fe;color:var(--primary);border:1px solid var(--primary);border-radius:6px;font-size:12px;font-weight:bold;cursor:pointer;white-space:nowrap;" title="Her seçim çevresini en güçlü üyeye otomatik dağıt">🎯 Otomatik</button>
+                <button class="danger" onclick="fermuarListes.splice(${idx},1);renderFermuar();if(Object.keys(globalResults).length>0)runProjection();">✖</button>
+            </div>
+            ${fl.isOpen ? `
+            <div style="margin-top:8px; border-top:1px dashed var(--border); padding-top:8px;">
+                <div style="font-size:11px;font-weight:bold;color:var(--text-secondary);margin-bottom:6px;">Üye Partiler:</div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:4px;margin-bottom:8px;">
+                    ${allParties.map(p => `
+                        <label class="coal-sim-box ${fl.members.includes(p)?'active':''}" style="${fl.members.includes(p)?'background:var(--primary);border-color:var(--primary);':''}" title="${escapeStr(p)}">
+                            <input type="checkbox" style="display:none;" ${fl.members.includes(p)?'checked':''} onchange="toggleFermuarMember(${idx},'${escapeStr(p)}',this.checked)">
+                            <span>${p}</span>
+                        </label>`).join('')}
+                </div>
+                ${fl.members.length > 0 ? `
+                <div style="font-size:11px;font-weight:bold;color:var(--text-secondary);margin-bottom:4px;">Seçim Çevresi Atamaları:</div>
+                ${memberRows}` : ''}
+            </div>` : ''}
+        </div>`;
+    }).join('');
+}
+
+window.renameFermuar = function(idx, newName) {
+    newName = newName.trim();
+    if (!newName) { renderFermuar(); return; }
+    fermuarListes[idx].name = newName;
+    renderFermuar();
+};
+
+window.toggleFermuarMember = function(flIdx, partyName, checked) {
+    const fl = fermuarListes[flIdx];
+    if (checked) {
+        if (!fl.members.includes(partyName)) fl.members.push(partyName);
+        if (!fl.districtMap) fl.districtMap = {};
+        fl.districtMap[partyName] = fl.districtMap[partyName] || [];
+    } else {
+        fl.members = fl.members.filter(x => x !== partyName);
+        if (fl.districtMap) delete fl.districtMap[partyName];
+        if (fl.openParties) delete fl.openParties[partyName];
+    }
+    renderFermuar();
+    if (Object.keys(globalResults).length > 0) runProjection();
+};
+
+window.toggleFermuarPartyOpen = function(flIdx, partyName) {
+    const fl = fermuarListes[flIdx];
+    if (!fl.openParties) fl.openParties = {};
+    fl.openParties[partyName] = !fl.openParties[partyName];
+    renderFermuar();
+};
+
+window.toggleFermuarDistrict = function(flIdx, partyName, distName) {
+    const fl = fermuarListes[flIdx];
+    if (!fl.districtMap) fl.districtMap = {};
+    if (!fl.districtMap[partyName]) fl.districtMap[partyName] = [];
+    const arr = fl.districtMap[partyName];
+    const pos = arr.indexOf(distName);
+    if (pos >= 0) arr.splice(pos, 1);
+    else arr.push(distName);
+    renderFermuar();
+    if (Object.keys(globalResults).length > 0) runProjection();
+};
+
+window.autoDistributeFermuar = function(flIdx) {
+    const fl = fermuarListes[flIdx];
+    if (!fl || fl.members.length === 0) return;
+    const districts = getMasterDistricts();
+    if (districts.length === 0) { alert('Önce seçim verisi yükleyin!'); return; }
+
+    // Build effective nat (with diger scaling)
+    const natMap = {};
+    extraParties.forEach(ep => { if (ep.isEnabled !== false) natMap[ep.name] = parseFloat(ep.nat) || 0; });
+    digerGroups.forEach(dg => {
+        if (dg.isEnabled === false) return;
+        const tp = parseFloat(dg.targetPct);
+        if (!tp || tp <= 0) return;
+        let cs = 0;
+        dg.members.forEach(m => { if (natMap[m] !== undefined) cs += natMap[m]; });
+        if (cs <= 0) return;
+        const sc = tp / cs;
+        dg.members.forEach(m => { if (natMap[m] !== undefined) natMap[m] *= sc; });
+    });
+
+    fl.districtMap = {};
+    fl.members.forEach(m => { fl.districtMap[m] = []; });
+
+    districts.forEach(dName => {
+        let best = null, bestScore = -1;
+        fl.members.forEach(m => {
+            const ep = extraParties.find(e => e.name === m && e.isEnabled !== false);
+            if (!ep) return;
+            let epScore = 0, hasSim = Object.values(ep.similarity || {}).some(v => v > 0);
+            if (!hasSim) { epScore = 1.0; }
+            else {
+                for (let donor in ep.similarity) {
+                    if ((ep.similarity[donor] || 0) <= 0) continue;
+                    let dPerfSum = 0, dW = 0;
+                    datasets.forEach(ds => {
+                        const dData = getDistrictDataWithPatch(ds, dName);
+                        if (dData && dData.votes[donor] > 0) {
+                            const dTotal = Object.values(dData.votes).reduce((a,b)=>a+b,0);
+                            dPerfSum += ((dData.votes[donor]/dTotal) / (ds.nat[donor] || 0.0001)) * ds.w;
+                            dW += ds.w;
+                        }
+                    });
+                    if (dW > 0) epScore += (dPerfSum/dW) * ep.similarity[donor];
+                }
+            }
+            const s = epScore * ((natMap[m] || 0) / 100);
+            if (s > bestScore) { bestScore = s; best = m; }
+        });
+        if (best) fl.districtMap[best].push(dName);
+    });
+
+    renderFermuar();
+    if (Object.keys(globalResults).length > 0) runProjection();
+};
+
 function downloadSeatData() {
     const masterDistricts = getMasterDistricts();
     if (masterDistricts.length === 0) return alert("Önce seçim verisi (.txt) yüklemelisiniz! İndirilecek çevre listesi oluşturulamadı.");
@@ -1915,7 +2089,7 @@ async function loadSeatData(inp) {
 function saveProject() {
     const projectData = {
         meta: { version: "10.0", date: new Date().toISOString() },
-        datasets, extraParties, coalitions, electoralAlliances, digerGroups, digerDisplayEnabled, customSeatOverrides, customDotPositions,
+        datasets, extraParties, coalitions, electoralAlliances, fermuarListes, digerGroups, digerDisplayEnabled, customSeatOverrides, customDotPositions,
         localDisabledParties: (() => {
             let obj = {};
             for(let k in localDisabledParties) obj[k] = Array.from(localDisabledParties[k]);
@@ -2009,6 +2183,15 @@ function applyProjectData(data) {
         color: a.color || '#000000'
     }));
 
+    fermuarListes = (data.fermuarListes || []).map(fl => ({
+        ...fl,
+        isOpen: fl.isOpen !== false,
+        isEnabled: fl.isEnabled !== false,
+        members: fl.members || [],
+        districtMap: fl.districtMap || {},
+        openParties: {}
+    }));
+
     digerGroups = (data.digerGroups || []).map(d => ({
         ...d,
         isOpen: d.isOpen!==false,
@@ -2051,7 +2234,7 @@ function applyProjectData(data) {
         if(data.settings.pluralityWhite !== undefined) $('pluralityWhiteInp').value = data.settings.pluralityWhite;
     }
 
-    updateGlobalParties(); renderDatasets(); renderExtraParties(); renderCoalitions(); renderAlliances(); renderDiger();
+    updateGlobalParties(); renderDatasets(); renderExtraParties(); renderCoalitions(); renderAlliances(); renderFermuar(); renderDiger();
     updateTotalTracker();
 }
 
@@ -2260,7 +2443,23 @@ function runProjection() {
                     if(dW > 0) epScore += (dPerfSum/dW) * ep.similarity[donor];
                 }
             }
-            scoreMap[ep.name] = epScore * (ep.nat/100);
+            scoreMap[ep.name] = epScore * ((baseTargetNat[ep.name] || 0) / 100);
+        });
+
+        // Fermuar liste oy aktarımı: yarışmayan üyelerin oyları yarışanlara orantılı dağılır
+        fermuarListes.forEach(fl => {
+            if (fl.isEnabled === false) return;
+            const competing = fl.members.filter(m => scoreMap[m] !== undefined && (fl.districtMap[m] || []).includes(dName));
+            const notCompeting = fl.members.filter(m => scoreMap[m] !== undefined && !(fl.districtMap[m] || []).includes(dName));
+            if (competing.length === 0 || notCompeting.length === 0) return;
+            const redistributeSum = notCompeting.reduce((s, m) => s + scoreMap[m], 0);
+            const competingTotal = competing.reduce((s, m) => s + scoreMap[m], 0);
+            notCompeting.forEach(m => { scoreMap[m] = 0; });
+            if (competingTotal > 0) {
+                competing.forEach(m => { scoreMap[m] += (scoreMap[m] / competingTotal) * redistributeSum; });
+            } else {
+                competing.forEach(m => { scoreMap[m] += redistributeSum / competing.length; });
+            }
         });
 
         const totalScore = Object.values(scoreMap).reduce((a,b)=>a+b,0);
