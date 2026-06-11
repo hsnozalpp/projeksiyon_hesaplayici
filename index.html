@@ -2514,11 +2514,11 @@ function runProjection() {
         const dhondtInputRaw = {...finalVotes};
         coalitions.forEach(c => {
             if (c.isEnabled === false) return;
-            let cSum = 0;
-            c.members.forEach(m => { 
-                if(dhondtInputRaw[m] !== undefined) { cSum += dhondtInputRaw[m]; delete dhondtInputRaw[m]; }
+            let cSum = 0, hasMembers = false;
+            c.members.forEach(m => {
+                if(dhondtInputRaw[m] !== undefined) { hasMembers = true; cSum += dhondtInputRaw[m]; delete dhondtInputRaw[m]; }
             });
-            if(cSum > 0) dhondtInputRaw[c.name] = cSum;
+            if(hasMembers) dhondtInputRaw[c.name] = cSum; // cSum=0 olsa bile (tüm üyeler pasif) ekle
         });
 
         const eligibleVotes = {};
@@ -3381,7 +3381,7 @@ function renderDistrictOverlay() {
 
         listHtml += `
             <div style="display:flex; justify-content:space-between; align-items:center; padding: 11px 20px; background: #ffffff; opacity: ${isLocallyDisabled ? '0.55' : '1'};">
-                <div style="width:${showLocalToggleButtons ? '210px' : '185px'}; display:flex; align-items:center; flex-shrink:0;">
+                <div style="width:${showLocalToggleButtons ? '212px' : '187px'}; display:flex; align-items:center; flex-shrink:0;">
                     ${toggleBtn}
                     <div style="font-weight:900; font-size:28px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:-0.3px; ${isLocallyDisabled ? 'text-decoration:line-through; color:var(--text-secondary);' : ''}">${p}</div>
                 </div>
