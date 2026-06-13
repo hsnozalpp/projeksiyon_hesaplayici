@@ -640,12 +640,6 @@
 <div class="right-panel">
 
     <div id="mainContentWrapper">
-        <div class="proj-header">
-            <button id="themeBtn" onclick="cycleTheme()" title="Tema değiştir" style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:bold;cursor:pointer;display:flex;align-items:center;gap:6px;transition:0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
-                <span id="themeBtnIcon">☀️</span><span id="themeBtnLabel">Açık</span>
-            </button>
-        </div>
-
         <div id="parliamentContainer" class="card" style="display:none; margin-bottom: 24px; padding: 12px 24px;">
             <div style="display:flex; gap:20px; align-items:center;">
                 <div style="flex:3; min-width:0; text-align:center;">
@@ -3454,7 +3448,7 @@ function renderResults(res){
         </table>
     </div>`;
     const scrollEl = area.querySelector('[data-tscroll]');
-    if (scrollEl && prevScrollLeft > 0) scrollEl.scrollLeft = prevScrollLeft;
+    if (scrollEl && prevScrollLeft > 0) requestAnimationFrame(() => { scrollEl.scrollLeft = prevScrollLeft; });
 
     updateMapColors();
     if (isSelectionModeActive) updateSelectionUI();
@@ -3950,8 +3944,12 @@ function updateSelectionUI() {
 
         const chartArea = $('parliamentChartArea');
         if (chartArea && totalSeats > 0 && Object.keys(partySeats).length > 0) {
+            const defaultSortedForChart = Object.keys(partySeats).sort((a, b) => partySeats[b] - partySeats[a]);
+            const orderedForChart = parliamentOrderOverride.length > 0
+                ? [...parliamentOrderOverride.filter(p => partySeats[p] > 0), ...defaultSortedForChart.filter(p => !parliamentOrderOverride.includes(p))]
+                : defaultSortedForChart;
             const sortedForChart = {};
-            Object.keys(partySeats).sort((a, b) => partySeats[b] - partySeats[a]).forEach(k => { sortedForChart[k] = partySeats[k]; });
+            orderedForChart.forEach(k => { if (partySeats[k]) sortedForChart[k] = partySeats[k]; });
             chartArea.innerHTML = createParliamentDiagram(sortedForChart, totalSeats);
         }
 
@@ -3995,8 +3993,12 @@ function updateSelectionUI() {
         if (label) label.textContent = `${selectedDistricts.size} Çevre`;
         const chartArea = $('parliamentChartArea');
         if (chartArea && totalSeats > 0) {
+            const defaultSortedForChart = Object.keys(partySeats).sort((a,b) => partySeats[b]-partySeats[a]);
+            const orderedForChart = parliamentOrderOverride.length > 0
+                ? [...parliamentOrderOverride.filter(p => partySeats[p] > 0), ...defaultSortedForChart.filter(p => !parliamentOrderOverride.includes(p))]
+                : defaultSortedForChart;
             const sortedForChart = {};
-            Object.keys(partySeats).sort((a,b) => partySeats[b]-partySeats[a]).forEach(k => { sortedForChart[k] = partySeats[k]; });
+            orderedForChart.forEach(k => { if (partySeats[k]) sortedForChart[k] = partySeats[k]; });
             chartArea.innerHTML = createParliamentDiagram(sortedForChart, totalSeats);
         }
 
