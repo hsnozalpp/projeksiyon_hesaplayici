@@ -3919,12 +3919,30 @@ function renderDistrictOverlay() {
         `;
     });
     
-    const dHasOverrides = !!(customVoteOverrides[dName] && Object.keys(customVoteOverrides[dName]).length);
+    const ovObj = customVoteOverrides[dName] || {};
+    const dHasOverrides = Object.keys(ovObj).length > 0;
     let bannerHtml = '';
     if (dHasOverrides) {
-        bannerHtml = `<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 20px; background:var(--purple-tint, #ede9fe); border-bottom:1px solid var(--border);">
-            <span style="font-size:13px; font-weight:bold; color:var(--purple, #7c3aed);">✏️ Bu il için manuel oy değişiklikleri uygulandı</span>
-            <button onclick="clearVoteOverrides('${escapeStr(dName)}')" style="font-size:12px; font-weight:bold; color:var(--purple, #7c3aed); background:var(--surface); border:1px solid var(--purple, #7c3aed); border-radius:6px; padding:4px 10px; cursor:pointer;">↺ Tümünü sıfırla</button>
+        // Girilen (sabitlenen) yüzdelerin toplamı ve %100 kontrolü
+        let ovSum = 0, ovCount = 0;
+        for (let k in ovObj) { ovSum += Math.max(0, parseFloat(ovObj[k]) || 0); ovCount++; }
+        ovSum = Math.round(ovSum * 100) / 100;
+        const remPct = Math.round(Math.max(0, 100 - ovSum) * 100) / 100;
+        const fmt = n => (Math.round(n * 100) / 100).toString().replace('.', ',');
+        let statusHtml;
+        if (ovSum > 100.001) {
+            statusHtml = `<span style="font-size:12px; font-weight:bold; color:var(--danger, #dc2626);">⚠️ Girilen toplam %${fmt(ovSum)} — 100'ü aşıyor, oranlanarak normalize edildi</span>`;
+        } else if (Math.abs(ovSum - 100) < 0.01) {
+            statusHtml = `<span style="font-size:12px; font-weight:bold; color:var(--success, #16a34a);">✓ Girilenler %100'e tamamlandı (${ovCount} parti sabit)</span>`;
+        } else {
+            statusHtml = `<span style="font-size:12px; font-weight:bold; color:var(--purple, #7c3aed);">Girilen %${fmt(ovSum)} · kalan %${fmt(remPct)} diğer partilere dağıtıldı</span>`;
+        }
+        bannerHtml = `<div style="display:flex; justify-content:space-between; align-items:center; gap:12px; padding:8px 20px; background:var(--purple-tint, #ede9fe); border-bottom:1px solid var(--border);">
+            <span style="display:flex; flex-direction:column; gap:2px;">
+                <span style="font-size:13px; font-weight:bold; color:var(--purple, #7c3aed);">✏️ Manuel oy değişiklikleri uygulandı</span>
+                ${statusHtml}
+            </span>
+            <button onclick="clearVoteOverrides('${escapeStr(dName)}')" style="font-size:12px; font-weight:bold; color:var(--purple, #7c3aed); background:var(--surface); border:1px solid var(--purple, #7c3aed); border-radius:6px; padding:4px 10px; cursor:pointer; white-space:nowrap; flex-shrink:0;">↺ Tümünü sıfırla</button>
         </div>`;
     } else if (showVoteEditInputs) {
         bannerHtml = `<div style="padding:8px 20px; background:var(--highlight-bg); border-bottom:1px solid var(--border); font-size:12px; color:var(--text-secondary);">✏️ Düzenleme modu açık — bir partinin yüzdesini değiştirin; kalan oy diğer partilere orantılı dağıtılır.</div>`;
