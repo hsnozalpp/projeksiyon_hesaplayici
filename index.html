@@ -424,6 +424,9 @@
         <button id="localEditToggleBtn" onclick="toggleLocalEditButtons()" style="background:var(--surface); color:var(--text-secondary); border-radius:6px; font-size:12px; font-weight:bold; padding:8px 10px; border:1px solid var(--border); display:flex; align-items:center; gap:6px; cursor:pointer; transition:0.2s; box-shadow:var(--shadow);" title="İl bazlı aktif/pasif düzenlemeyi aç/kapat">
             🔧
         </button>
+        <button id="voteEditToggleBtn" onclick="toggleVoteEditButtons()" style="background:var(--surface); color:var(--text-secondary); border-radius:6px; font-size:12px; font-weight:bold; padding:8px 10px; border:1px solid var(--border); display:flex; align-items:center; gap:6px; cursor:pointer; transition:0.2s; box-shadow:var(--shadow);" title="İl detayında oy yüzdelerini manuel düzenle (aç/kapat)">
+            ✏️
+        </button>
         <button id="parliamentStyleBtn" onclick="toggleParliamentStyle()" style="background:var(--surface); color:var(--text-secondary); border-radius:6px; font-size:12px; font-weight:bold; padding:8px 10px; border:1px solid var(--border); display:flex; align-items:center; gap:6px; cursor:pointer; transition:0.2s; box-shadow:var(--shadow); white-space:nowrap;" title="Parlamento diyagram stilini değiştir">
             🏛️ Arch
         </button>
@@ -750,6 +753,8 @@ let customSeatOverrides = {};
 let globalResults = {};
 let parliamentOrderOverride = [];
 let localDisabledParties = {}; // YENİ: İl bazlı parti iptallerini tutar
+let customVoteOverrides = {}; // YENİ: İl bazlı manuel oy yüzdesi değişiklikleri { "İl": { "Parti": yüzde } }
+let showVoteEditInputs = false; // İl detayında manuel oy düzenleme modu
 
 let dragCtx = { type: null, idx: null };
 let activePartyFilter = null;
@@ -2370,7 +2375,7 @@ async function loadSeatData(inp) {
 function saveProject() {
     const projectData = {
         meta: { version: "10.1", date: new Date().toISOString() },
-        datasets, extraParties, coalitions, electoralAlliances, fermuarListes, digerGroups, digerDisplayEnabled, customSeatOverrides, customDotPositions, parliamentOrderOverride,
+        datasets, extraParties, coalitions, electoralAlliances, fermuarListes, digerGroups, digerDisplayEnabled, customSeatOverrides, customVoteOverrides, customDotPositions, parliamentOrderOverride,
         localDisabledParties: (() => {
             let obj = {};
             for(let k in localDisabledParties) obj[k] = Array.from(localDisabledParties[k]);
@@ -2515,6 +2520,7 @@ function applyProjectData(data) {
     }
 
     customSeatOverrides = data.customSeatOverrides || {};
+    customVoteOverrides = data.customVoteOverrides || {};
     customDotPositions = data.customDotPositions || {};
     parliamentOrderOverride = data.parliamentOrderOverride || [];
     
@@ -2838,6 +2844,30 @@ function runProjection() {
         const totalScore = Object.values(scoreMap).reduce((a,b)=>a+b,0);
         const finalVotes = {};
         for(let p in scoreMap) finalVotes[p] = (scoreMap[p]/(totalScore||1)) * districtTotalVotes;
+
+        // --- İL BAZLI MANUEL OY DEĞİŞİKLİKLERİNİ (YÜZDE) UYGULA ---
+        // customVoteOverrides[dName] = { "Parti": yüzde }. Belirtilen partiler hedef yüzdeye
+        // sabitlenir; geri kalan oran, diğer partilere mevcut projeksiyon oranlarında dağıtılır.
+        const voteOv = customVoteOverrides[dName];
+        if (voteOv && Object.keys(voteOv).length) {
+            const baseTotal = districtTotalVotes || 1;
+            // Override edilen ama listede olmayan partileri ekle
+            for (let p in voteOv) { if (finalVotes[p] === undefined) finalVotes[p] = 0; }
+            let usedPct = 0;
+            for (let p in voteOv) usedPct += Math.max(0, parseFloat(voteOv[p]) || 0);
+            const remPct = Math.max(0, 100 - usedPct);
+            let othSum = 0;
+            for (let p in finalVotes) { if (!(p in voteOv)) othSum += finalVotes[p]; }
+            for (let p in finalVotes) {
+                if (p in voteOv) {
+                    finalVotes[p] = (Math.max(0, parseFloat(voteOv[p]) || 0) / 100) * baseTotal;
+                } else {
+                    finalVotes[p] = othSum > 0 ? (finalVotes[p] / othSum) * (remPct / 100) * baseTotal : 0;
+                }
+            }
+            districtTotalVotes = Object.values(finalVotes).reduce((a, b) => a + b, 0) || 1;
+        }
+        // ---------------------------------------------------------------
 
         // --- İL BAZLI PARTİ İPTALLERİNİ (PASİF DURUMLARI) UYGULA ---
         const locallyDisabled = localDisabledParties[dName] || new Set();
@@ -3821,6 +3851,9 @@ function renderDistrictOverlay() {
     sortedParties.forEach(p => {
         const v = displayData.rawVotes[p];
         const s = displayData.mvs[p] || 0;
+        // Sadece tekil partiler (gruplanmamış) manuel düzenlenebilir
+        const isEditableParty = !!(itemRaw.pureVotes && (p in itemRaw.pureVotes));
+        const hasOverride = !!(customVoteOverrides[dName] && customVoteOverrides[dName][p] !== undefined);
         const pctNum = displayData.totalVotes > 0 ? ((v / displayData.totalVotes) * 100) : 0;
         const pctStr = pctNum.toFixed(2).replace('.', ',');
         const color = getPartyColor(p);
@@ -3829,7 +3862,8 @@ function renderDistrictOverlay() {
         const isLocallyDisabled = localDisabledParties[dName] && localDisabledParties[dName].has(p);
         
         // Eğer parti yerel olarak kapatılmışsa her zaman görünür kalsın (tier3'e saklanmasın)
-        const isDefaultVisible = s > 0 || pctNum >= 1.00 || isLocallyDisabled;
+        const isDefaultVisible = s > 0 || pctNum >= 1.00 || isLocallyDisabled
+            || hasOverride || (showVoteEditInputs && isEditableParty);
         
         if (!isDefaultVisible && !showingAllInOverlay) {
             hasHidden = true;
@@ -3868,6 +3902,14 @@ function renderDistrictOverlay() {
                     </div>
                 </div>
 
+                ${(showVoteEditInputs && isEditableParty) ? `
+                <div style="width:96px; flex-shrink:0; display:flex; align-items:center; justify-content:flex-end; gap:4px; margin-right:12px;">
+                    <div style="display:flex; align-items:center; background:var(--highlight-bg); border:1px solid ${hasOverride ? 'var(--purple, #7c3aed)' : 'var(--border)'}; border-radius:6px; padding:2px 6px;" title="Bu il için ${p} oy yüzdesi">
+                        <input type="number" step="0.1" min="0" max="100" value="${realPctStr.replace(',', '.')}" onchange="updateVoteOverride('${escapeStr(dName)}', '${escapeStr(p)}', this.value)" style="background:transparent; border:none; color:var(--text); font-weight:900; width:56px; text-align:right; font-size:18px; padding:0; outline:none;">
+                        <span style="font-weight:900; font-size:16px; color:var(--text-secondary); margin-left:2px;">%</span>
+                    </div>
+                    ${hasOverride ? `<button onclick="updateVoteOverride('${escapeStr(dName)}', '${escapeStr(p)}', '')" title="Bu partiyi projeksiyona döndür" style="width:22px; height:22px; border-radius:5px; border:1px solid var(--border); background:var(--surface); color:var(--text-secondary); cursor:pointer; font-size:12px; line-height:1; flex-shrink:0;">↺</button>` : ''}
+                </div>` : ''}
                 <div style="width:80px; text-align:right; flex-shrink:0;">
                     ${s > 0 && !isLocallyDisabled
                         ? `<span style="font-size:34px; font-weight:900; color:${color}; letter-spacing:-1px;">${s}</span>`
@@ -3877,7 +3919,17 @@ function renderDistrictOverlay() {
         `;
     });
     
-    $('doUnifiedList').innerHTML = listHtml;
+    const dHasOverrides = !!(customVoteOverrides[dName] && Object.keys(customVoteOverrides[dName]).length);
+    let bannerHtml = '';
+    if (dHasOverrides) {
+        bannerHtml = `<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 20px; background:var(--purple-tint, #ede9fe); border-bottom:1px solid var(--border);">
+            <span style="font-size:13px; font-weight:bold; color:var(--purple, #7c3aed);">✏️ Bu il için manuel oy değişiklikleri uygulandı</span>
+            <button onclick="clearVoteOverrides('${escapeStr(dName)}')" style="font-size:12px; font-weight:bold; color:var(--purple, #7c3aed); background:var(--surface); border:1px solid var(--purple, #7c3aed); border-radius:6px; padding:4px 10px; cursor:pointer;">↺ Tümünü sıfırla</button>
+        </div>`;
+    } else if (showVoteEditInputs) {
+        bannerHtml = `<div style="padding:8px 20px; background:var(--highlight-bg); border-bottom:1px solid var(--border); font-size:12px; color:var(--text-secondary);">✏️ Düzenleme modu açık — bir partinin yüzdesini değiştirin; kalan oy diğer partilere orantılı dağıtılır.</div>`;
+    }
+    $('doUnifiedList').innerHTML = bannerHtml + listHtml;
     $('doShowAllBtn').style.display = hasHidden ? 'flex' : 'none';
 }
 
@@ -3894,6 +3946,42 @@ window.toggleLocalEditButtons = function() {
         btn.style.borderColor = 'var(--border)';
     }
     if ($('districtOverlay').style.display === 'block') renderDistrictOverlay();
+};
+
+// --- İL BAZLI MANUEL OY DÜZENLEME ---
+window.toggleVoteEditButtons = function() {
+    showVoteEditInputs = !showVoteEditInputs;
+    const btn = $('voteEditToggleBtn');
+    if (showVoteEditInputs) {
+        btn.style.background = 'var(--purple, #7c3aed)';
+        btn.style.color = 'white';
+        btn.style.borderColor = 'var(--purple, #7c3aed)';
+    } else {
+        btn.style.background = 'var(--surface)';
+        btn.style.color = 'var(--text-secondary)';
+        btn.style.borderColor = 'var(--border)';
+    }
+    if ($('districtOverlay').style.display === 'block') renderDistrictOverlay();
+};
+
+window.updateVoteOverride = function(dName, partyName, val) {
+    const num = parseFloat(String(val).replace(',', '.'));
+    if (!customVoteOverrides[dName]) customVoteOverrides[dName] = {};
+    if (val === '' || isNaN(num)) {
+        delete customVoteOverrides[dName][partyName];
+    } else {
+        customVoteOverrides[dName][partyName] = Math.max(0, Math.min(100, num));
+    }
+    if (Object.keys(customVoteOverrides[dName]).length === 0) delete customVoteOverrides[dName];
+    runProjection(); // anında hesapla; overlay runProjection sonunda otomatik yenilenir
+};
+
+// Bir ilin tüm manuel oy değişikliklerini sıfırla (projeksiyona geri dön)
+window.clearVoteOverrides = function(dName) {
+    if (customVoteOverrides[dName]) {
+        delete customVoteOverrides[dName];
+        runProjection();
+    }
 };
 
 // --- ÖZEL İNCELEME (ARA SEÇİM) FONKSİYONLARI ---
@@ -4641,7 +4729,7 @@ function saveProject() {
     const projectData = {
         meta: { version: "10.1-lean", date: new Date().toISOString() },
         datasets: datasets.map(ds => ({ name: ds.name, w: ds.w })),
-        extraParties, coalitions, electoralAlliances, fermuarListes, digerGroups, digerDisplayEnabled, customSeatOverrides, customDotPositions, parliamentOrderOverride,
+        extraParties, coalitions, electoralAlliances, fermuarListes, digerGroups, digerDisplayEnabled, customSeatOverrides, customVoteOverrides, customDotPositions, parliamentOrderOverride,
         localDisabledParties: (() => {
             let obj = {};
             for (let k in localDisabledParties) obj[k] = Array.from(localDisabledParties[k]);
